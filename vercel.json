@@ -1,13 +1,9 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "core/asgi.py",
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "50mb" }
-    }
-  ],
+  "version": 3,
   "routes": [
-    { "src": "/(.*)", "dest": "core/asgi.py" }
+    {
+      "src": "/(.*)",
+      "dest": "core/asgi.py"
+    }
   ]
 }
