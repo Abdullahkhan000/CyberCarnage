@@ -23,4 +23,8 @@ urlpatterns = [
     path("faq/", views.faq_page, name="faq"),
 
     path("subscribe/", views.subscribe_newsletter, name="subscribe_newsletter"),
+
+    path("/<int:pk>/", views.about_detail_view, name="about_detail"),
+
+    path("send/", views.send_contact, name="send_contact"),
 ]
