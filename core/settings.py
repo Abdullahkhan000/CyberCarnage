@@ -30,6 +30,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'cybercarnage.onrender.com',
     'www.cybercarnage.com',
+    'https://cyber-carnage.vercel.app/'
 ]
 
 
