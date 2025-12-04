@@ -8,9 +8,6 @@
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "core/asgi.py"
-    }
+    { "src": "/(.*)", "dest": "core/asgi.py" }
   ]
 }
