@@ -138,7 +138,7 @@
         <div class="absolute bottom-16 right-0 w-8 h-px bg-pink-500/50 opacity-40"></div>
     </div>
 
-    <!-- Header -->
+
     <header class="fixed w-full top-0 z-50 transition-all duration-300 backdrop-blur-md bg-black/40 border-b border-white/10">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <!-- LOGO -->
@@ -151,14 +151,13 @@
                 </h1>
             </a>
 
-            <!-- DESKTOP NAV -->
+            <!-- DESKTOP NAVbar -->
             <nav class="hidden md:flex items-center space-x-8">
                 <a href="{% url 'home' %}" class="text-gray-300 hover:text-white glitch-hover">GAMES</a>
                 <a href="{% url 'about_list' %}" class="text-gray-300 hover:text-white glitch-hover">ABOUT</a>
                 <a href="{% url 'gameinfo_list' %}" class="text-gray-300 hover:text-white glitch-hover">GAME LIST</a>
             </nav>
 
-            <!-- MOBILE MENU BUTTON -->
             <button class="md:hidden text-white focus:outline-none glitch-hover" onclick="toggleMenu()">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -167,7 +166,6 @@
             </button>
         </div>
 
-        <!-- MOBILE NAV -->
         <div id="mobileNav" class="md:hidden hidden flex flex-col bg-black/90 border-t border-gray-700">
             <a href="{% url 'home' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">GAMES</a>
             <a href="{% url 'about_list' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">ABOUT</a>
@@ -183,7 +181,6 @@
     <!-- Footer -->
     <footer class="relative z-10 border-t border-white/10 bg-black/80 backdrop-blur-xl mt-auto">
 
-        <!-- TOP SYSTEM LOG -->
         <div class="container mx-auto px-4 py-3 text-center border-b border-gray-700/50">
             <p class="text-sm font-mono tracking-wider text-gray-500">
                 <span class="text-cyan-400 font-semibold neon-pulse">>> SYSTEM LOG: STATUS OPTIMAL <<</span>
@@ -197,7 +194,6 @@
         <!-- MAIN FOOTER ROW -->
         <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
 
-            <!-- LEFT LOGO SECTION -->
             <div class="mb-4 md:mb-0">
                 <span class="font-display font-bold text-xl tracking-widest text-gray-400">
                     CYBER<span class="text-cyan-600">CARNAGE</span>
@@ -205,7 +201,6 @@
                 <p class="text-xs text-gray-500 mt-1 font-mono">NEXT GEN GAMING DATABASE</p>
             </div>
 
-            <!-- CENTER NAV LINKS -->
             <div class="flex space-x-6 text-sm font-medium text-gray-400">
                 <a href="{% url 'privacy' %}" class="hover:text-cyan-400 transition-colors glitch-hover">Privacy</a>
                 <a href="{% url 'terms' %}" class="hover:text-cyan-400 transition-colors glitch-hover">Terms</a>
@@ -213,10 +208,8 @@
                 <a onclick="openContact()" class="hover:text-cyan-400 transition-colors cursor-pointer glitch-hover">Contact</a>
             </div>
 
-            <!-- RIGHT SOCIAL ICONS -->
             <div class="flex space-x-6 text-gray-400 mt-4 md:mt-0">
 
-                <!-- Instagram -->
                 <a href="https://www.instagram.com/code2encoder/" target="_blank"
                    class="hover:text-pink-500 transition-colors glitch-hover">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -224,7 +217,6 @@
                     </svg>
                 </a>
 
-                <!-- LinkedIn -->
                 <a href="www.linkedin.com/in/hafiz-muhammad-abdullah-ibrahim-38b586243" target="_blank"
                    class="hover:text-blue-500 transition-colors glitch-hover">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -232,7 +224,6 @@
                     </svg>
                 </a>
 
-                <!-- GitHub -->
                 <a href="https://github.com/Abdullahkhan000" target="_blank"
                    class="hover:text-blue-500 transition-colors glitch-hover">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -250,10 +241,8 @@
             </div>
         </div>
 
-        <!-- SMALL DIVIDER -->
         <div class="h-[1px] w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
 
-        <!-- SUBSCRIBE SECTION -->
         <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-center items-center gap-4">
             <h3 class="text-white font-display font-bold text-lg glitch-hover">Subscribe to Updates</h3>
 
@@ -271,9 +260,6 @@
 
     </footer>
 
-
-
-    <!-- CONTACT MODAL -->
     <div id="contactModal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-[999] hidden flex items-center justify-center">
         <div class="relative w-full max-w-xl bg-cyber-gray p-8 rounded-xl border border-cyan-400/40 shadow-xl animate-fade-in">
             <button onclick="closeContact()" class="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl glitch-hover">×</button>
