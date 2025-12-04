@@ -1,0 +1,215 @@
+{% extends "data/base.html" %}
+
+{% block title %}
+CYBERCARNAGE | MAIN CATALOGUE
+{% endblock %}
+
+{% block content %}
+<style>
+  /* --- Animations --- */
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-entry { animation: slideInUp 0.6s ease-out forwards; }
+
+  @keyframes borderPulse {
+    0% { border-color: rgba(236, 72, 153, 0.5); box-shadow: 0 0 10px rgba(236, 72, 153, 0.4); }
+    50% { border-color: rgba(255, 255, 255, 0.8); box-shadow: 0 0 25px rgba(255, 255, 255, 0.7); }
+    100% { border-color: rgba(236, 72, 153, 0.5); box-shadow: 0 0 10px rgba(236, 72, 153, 0.4); }
+  }
+
+  .group:hover .pulsing-border { animation: borderPulse 0.5s infinite alternate; }
+
+  @keyframes dynamicPan {
+    0% { transform: scale(1.1) translateX(0); }
+    50% { transform: scale(1.05) translateX(-5%); }
+    100% { transform: scale(1.1) translateX(0); }
+  }
+
+  .poster-move {
+    animation: dynamicPan 20s linear infinite alternate;
+    transform-origin: top left;
+  }
+</style>
+
+<div class="relative z-10 container mx-auto px-4 py-12">
+
+
+  <!-- HEADER -->
+  <div class="text-center mb-16 border-b-2 border-cyan-500/30 pb-4">
+    <h2 class="text-5xl md:text-7xl font-display font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.5)] glitch-hover">
+      MAIN CATALOGUE
+    </h2>
+    <p class="text-gray-400 mt-4 text-lg font-mono tracking-wide">
+      ACCESSING <span class="text-pink-400">>></span> {{ games|length }} RECORDS FOUND.
+    </p>
+  </div>
+
+  <!-- FILTERS SECTION -->
+  <div class="mb-8 p-4 bg-gray-800/50 rounded-xl border border-gray-700/50 backdrop-blur-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+      <input type="text" id="filter-game-name" placeholder="Game Name" class="px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white">
+      <input type="text" id="filter-series" placeholder="Series" class="px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white">
+      <input type="text" id="filter-company" placeholder="Company" class="px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white">
+      <input type="text" id="filter-platform" placeholder="Platform" class="px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white">
+      <input type="text" id="filter-steam-appid" placeholder="Steam AppID" class="px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white">
+      <button type="button" id="apply-filters" class="col-span-full py-2 px-4 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-lg transition-all">
+        Apply Filters
+      </button>
+  </div>
+
+
+
+  <!-- CARDS GRID -->
+  <div id="cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    {% for game in games %}
+      {% with detail=game.details.first %}
+        <div class="group relative bg-cyber-gray/60 backdrop-blur-md rounded-xl border border-gray-700/50 overflow-hidden hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(236,72,153,0.4)] transition-all duration-500 ease-out cursor-pointer card-entry"
+             style="animation-delay: {{ forloop.counter }}00ms; opacity: 0;"
+             data-game-name="{{ game.game_name|lower }}"
+             data-series="{{ game.series|default_if_none:''|lower }}"
+             data-company="{{ game.developer|lower }}"
+             data-platform="{{ detail.platform|default_if_none:''|lower }}"
+             data-steam-appid="{{ detail.steam_appid|default_if_none:'' }}">
+
+          {% if detail %}
+            <a href="{% url 'about_detail' detail.id %}" class="absolute inset-0 z-30"></a>
+          {% else %}
+            <a class="absolute inset-0 z-30 cursor-not-allowed opacity-30" title="Details not added yet"></a>
+          {% endif %}
+
+          <div class="absolute inset-0 rounded-xl border-2 border-transparent group-hover:border-pink-500/50 transition-colors duration-300 pointer-events-none z-20 pulsing-border"></div>
+
+          <div class="relative h-56 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-cyber-gray/90 via-transparent to-transparent z-10 opacity-80"></div>
+            {% if detail and detail.poster %}
+              <img src="{{ detail.poster }}" alt="{{ game.game_name }}" class="w-full h-full object-cover poster-move transition-transform duration-700 ease-in-out">
+            {% else %}
+              <div class="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500 font-mono"> NO POSTER </div>
+            {% endif %}
+            {% if game.series %}
+              <span class="absolute top-3 left-3 z-20 bg-black/70 backdrop-blur-sm border border-purple-500/50 text-purple-400 text-xs font-mono uppercase px-3 py-1 rounded-full shadow-lg">
+                Series: {{ game.series }}
+              </span>
+            {% endif %}
+          </div>
+
+          <div class="p-5 relative z-20 -mt-10">
+            <h3 class="text-2xl font-display font-bold text-white leading-tight drop-shadow-lg group-hover:text-pink-300 transition-colors animate-float">
+              {{ game.game_name }}
+            </h3>
+
+            <div class="h-px w-full bg-gradient-to-r from-gray-700 via-gray-500 to-gray-700 my-4 opacity-50"></div>
+
+            <div class="space-y-2 text-sm font-mono">
+              <p class="flex justify-between items-center text-gray-400">
+                <span class="text-xs uppercase tracking-wider">DEV. UNIT:</span>
+                <span class="text-cyan-400 font-semibold">{{ game.developer }}</span>
+              </p>
+              <p class="flex justify-between items-center text-gray-400">
+                <span class="text-xs uppercase tracking-wider">INIT. DATE:</span>
+                <span class="text-purple-400 font-semibold">{{ game.release_date }}</span>
+              </p>
+              <p class="flex justify-between items-center text-gray-400">
+                <span class="text-xs uppercase tracking-wider">STEAM ID:</span>
+                <span class="text-green-400 font-semibold ml-10">{{ detail.steam_appid }}</span>
+              </p>
+
+            </div>
+
+            <div class="text-center mt-6">
+              {% if detail %}
+                <a href="{% url 'about_detail' detail.id %}">
+                  <span class="relative inline-block text-sm font-bold text-pink-500 border-b border-pink-500 opacity-80 group-hover:opacity-100 group-hover:text-white group-hover:border-white transition-all duration-300 glitch-hover">
+                    [ VIEW DATA FILE ]
+                  </span>
+                </a>
+              {% else %}
+                <span class="relative inline-block text-sm font-bold text-gray-600 border-b border-gray-600 opacity-50 cursor-not-allowed" title="Details not added yet">
+                  [ NO DATA FILE ]
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      {% endwith %}
+    {% empty %}
+      <div class="col-span-full flex flex-col items-center justify-center py-20 text-center text-gray-500">
+        <div class="text-6xl mb-4 text-pink-500 animate-pulse-slow">🛑</div>
+        <h3 class="text-2xl font-display font-bold">CRITICAL WARNING: NO GAMES FOUND</h3>
+        <p class="text-gray-600 font-mono mt-2">DATABASE INITIALIZATION FAILED. CONTACT SYSTEM ADMIN.</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- JAVASCRIPT FILTER -->
+<script>
+  const filters = {
+    gameName: document.getElementById('filter-game-name'),
+    series: document.getElementById('filter-series'),
+    company: document.getElementById('filter-company'),
+    platform: document.getElementById('filter-platform'),
+    steamAppid: document.getElementById('filter-steam-appid'),
+  };
+
+  const cards = document.querySelectorAll('.card-entry');
+
+  function applyFilters(updateURL=true) {
+    const gameNameVal = filters.gameName.value.toLowerCase();
+    const seriesVal = filters.series.value.toLowerCase();
+    const companyVal = filters.company.value.toLowerCase();
+    const platformVal = filters.platform.value.toLowerCase();
+    const steamAppidVal = filters.steamAppid.value;
+
+    cards.forEach(card => {
+      const cardPlatform = (card.dataset.platform || '').toLowerCase();
+      const cardSteam = card.dataset.steamAppid || '';
+      const matches =
+        (card.dataset.gameName || '').toLowerCase().includes(gameNameVal) &&
+        (card.dataset.series || '').toLowerCase().includes(seriesVal) &&
+        (card.dataset.company || '').toLowerCase().includes(companyVal) &&
+        cardPlatform.includes(platformVal) &&
+        cardSteam.includes(steamAppidVal);
+      card.style.display = matches ? '' : 'none';
+    });
+
+    if (updateURL) {
+      const params = new URLSearchParams({
+        game_name: filters.gameName.value,
+        series: filters.series.value,
+        company: filters.company.value,
+        platforms: filters.platform.value,
+        steam_appid: filters.steamAppid.value
+      });
+      history.replaceState(null, '', '?' + params.toString());
+    }
+  }
+
+  // Event listeners
+  Object.values(filters).forEach(input => {
+    input.addEventListener('input', () => applyFilters());
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyFilters();
+      }
+    });
+  });
+
+  document.getElementById('apply-filters').addEventListener('click', () => applyFilters());
+
+  // Initialize from URL params
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('game_name')) filters.gameName.value = params.get('game_name');
+    if (params.has('series')) filters.series.value = params.get('series');
+    if (params.has('company')) filters.company.value = params.get('company');
+    if (params.has('platforms')) filters.platform.value = params.get('platforms');
+    if (params.has('steam_appid')) filters.steamAppid.value = params.get('steam_appid');
+    applyFilters(false);
+  });
+</script>
+{% endblock %}

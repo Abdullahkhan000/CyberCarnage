@@ -1,0 +1,117 @@
+{% extends "data/base.html" %}
+{% block title %}About CyberCarnage{% endblock %}
+
+{% block content %}
+<style>
+    /* Animations and effects */
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .card-entry { animation: slideInUp 0.6s ease-out forwards; }
+
+    @keyframes neonPulse {
+        0% { text-shadow: 0 0 5px #00f3ff, 0 0 10px #00f3ff; }
+        100% { text-shadow: 0 0 2px #00f3ff, 0 0 4px #bc13fe; }
+    }
+    .neon-pulse { animation: neonPulse 2s ease-in-out infinite alternate; }
+
+    @keyframes barScan { 0% { width: 0%; } 100% { width: var(--final-width); } }
+    .data-bar { animation: barScan 1.5s ease-out forwards; }
+</style>
+
+<div class="min-h-screen bg-black text-gray-100 py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black pointer-events-none"></div>
+
+    <div class="relative z-10 container mx-auto">
+
+        <!-- Page Title -->
+        <div class="text-center mb-16">
+            <h2 class="text-5xl md:text-7xl font-display font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.5)] glitch-hover">
+                About CYBER<span class="text-cyan-400">CARNAGE</span>
+            </h2>
+
+            <div class="h-1 w-24 mx-auto mt-4 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-full shadow-[0_0_15px_rgba(236,72,153,0.8)]"></div>
+            <p class="text-gray-400 mt-4 text-lg font-mono tracking-wide">
+                EXPERIENCE > EXPLORE > ANALYZE
+            </p>
+        </div>
+
+        <!-- About CyberCarnage -->
+        <div class="max-w-3xl mx-auto mb-12 p-8 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-cyan-500/30 shadow-[0_0_15px_rgba(0,243,255,0.1)]">
+            <h3 class="text-3xl font-display font-bold text-cyan-400 border-b border-cyan-600/50 pb-2 mb-4 uppercase">
+                // SYSTEM CORE: CYBERCARNAGE
+            </h3>
+            <p class="text-gray-300 leading-relaxed font-sans text-lg mb-4">
+                **CyberCarnage** is a high-fidelity game data repository built for gamers, analysts, and enthusiasts seeking clean, immersive interfaces with fast, reliable access to game metadata. Our platform is crafted with precision, combining aesthetics, performance, and security.
+            </p>
+            <p class="text-gray-300 leading-relaxed font-sans text-lg mb-4">
+                With a modular architecture, CyberCarnage supports real-time updates, comprehensive analytics, and a rich library of curated content. From release data and genre classifications to developer and publisher insights, the system empowers users to explore games in depth.
+            </p>
+            <p class="text-gray-300 leading-relaxed font-sans text-lg">
+                Our mission is simple: provide an audacious yet elegant digital playground for gaming knowledge, where **data integrity**, **visual clarity**, and **user experience** converge seamlessly.
+            </p>
+            <div class="text-right text-sm mt-4 text-purple-400 font-mono">
+                [DATA INTEGRITY RATING: A+ | SYSTEM UPTIME: 99.9%]
+            </div>
+        </div>
+
+        <!-- About Code2Encoder -->
+        <div class="max-w-3xl mx-auto mb-12 p-8 bg-gray-900/50 backdrop-blur-sm rounded-xl border border-purple-500/30 shadow-[0_0_15px_rgba(188,19,254,0.1)]">
+            <h3 class="text-3xl font-display font-bold text-purple-400 border-b border-purple-600/50 pb-2 mb-4 uppercase glitch-hover">
+                // ABOUT CODE2ENCODER
+            </h3>
+            <p class="text-gray-300 leading-relaxed font-sans text-lg mb-4">
+                **Code2Encoder** is the mastermind behind the CyberCarnage ecosystem. The entire frontend and backend architecture, maintenance, and optimization are designed and executed by Code2Encoder, ensuring a high-performance, visually immersive experience.
+            </p>
+            <p class="text-gray-300 leading-relaxed font-sans text-lg mb-4">
+                Real Name: <strong>Hafiz Muhammad Abdullah Ibrahim</strong><br>
+                Role: <strong>Junior Developer | Python, Django & DRF | C Programmer</strong><br>
+                Skills: <strong>Continuous Learner | Video Encoder & Digital Media Specialist</strong>
+            </p>
+            <p class="text-gray-300 leading-relaxed font-sans text-lg">
+                With an eye for detail and passion for technology, Code2Encoder ensures the platform runs flawlessly, keeps data integrity intact, and continuously enhances user experience. The combination of technical prowess and creative vision makes CyberCarnage a unique hub for game analysis.
+            </p>
+        </div>
+
+        <!-- Operational Metrics -->
+        <div class="mt-20 pt-8 border-t border-gray-700/50">
+            <h3 class="text-3xl font-display font-bold text-pink-400 mb-6 uppercase text-center">
+                // OPERATIONAL METRICS
+            </h3>
+            <div class="max-w-xl mx-auto space-y-5">
+                <div class="font-mono text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-cyan-400">TOTAL DATA ENTRIES</span>
+                        <span class="text-white glitch-hover">78%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2.5">
+                        <div class="bg-gradient-to-r from-cyan-400 to-purple-500 h-2.5 rounded-full data-bar" style="--final-width: 78%;"></div>
+                    </div>
+                </div>
+                <div class="font-mono text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-pink-400">DATA INTEGRITY & VALIDATION</span>
+                        <span class="text-white glitch-hover">94%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2.5">
+                        <div class="bg-gradient-to-r from-pink-500 to-purple-600 h-2.5 rounded-full data-bar" style="--final-width: 94%; animation-delay: 0.2s;"></div>
+                    </div>
+                </div>
+                <div class="font-mono text-sm">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-green-400">SYSTEM UPTIME RELIABILITY</span>
+                        <span class="text-white glitch-hover">99.9%</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2.5">
+                        <div class="bg-gradient-to-r from-green-400 to-cyan-400 h-2.5 rounded-full data-bar" style="--final-width: 99.9%; animation-delay: 0.4s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

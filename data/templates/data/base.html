@@ -1,0 +1,293 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
+    <link rel="shortcut icon" href="{% static 'icons/favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
+    <link rel="mask-icon" href="{% static 'icons/safari-pinned-tab.svg' %}" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#2d89ef">
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CyberCarnage{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        // Tailwind Config
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Rajdhani', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        cyber: {
+                            dark: '#050505',
+                            gray: '#121212',
+                            cyan: '#00f3ff',
+                            pink: '#bc13fe',
+                            purple: '#7e22ce'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'shake': 'shake 0.3s ease-in-out',
+                        'pulse-wave': 'pulseWave 0.5s ease-in-out 3',
+                        'spin': 'spin 1s linear infinite'
+                    },
+                    keyframes: {
+                        float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+                        scanline: { '0%': { transform: 'translateY(-100%)' }, '100%': { transform: 'translateY(100%)' } },
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        shake: { '0%,100%': { transform: 'translateX(0)' }, '25%': { transform: 'translateX(-5px)' }, '50%': { transform: 'translateX(5px)' }, '75%': { transform: 'translateX(-5px)' } },
+                        pulseWave: { '0%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.1)' }, '100%': { transform: 'scale(1)' } }
+                    }
+                }
+            }
+        }
+
+        function toggleMenu() {
+            const nav = document.getElementById("mobileNav");
+            nav.classList.toggle("hidden");
+        }
+
+        function openContact() { document.getElementById("contactModal").classList.remove("hidden"); }
+        function closeContact() { document.getElementById("contactModal").classList.add("hidden"); }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const contactForm = document.getElementById("contactForm");
+            const sendBtn = document.getElementById("sendBtn");
+            const originalSendText = sendBtn.innerHTML;
+            contactForm?.addEventListener("submit", function(e){
+                e.preventDefault();
+                sendBtn.innerHTML = `<span class="loader border-t-2 border-b-2 border-white w-5 h-5 inline-block rounded-full animate-spin mr-2"></span> SENDING...`;
+                sendBtn.disabled = true;
+                fetch("/contact/send/", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                    body: new FormData(this)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = originalSendText;
+                    if(data.status === "success") { contactForm.classList.add("animate-pulse-wave"); setTimeout(()=>contactForm.classList.remove("animate-pulse-wave"),1500); alert("Message sent successfully!"); contactForm.reset(); closeContact(); }
+                    else { contactForm.classList.add("animate-shake"); setTimeout(()=>contactForm.classList.remove("animate-shake"),500); alert("Error sending message!"); }
+                }).catch(()=>{ sendBtn.disabled=false; sendBtn.innerHTML=originalSendText; contactForm.classList.add("animate-shake"); setTimeout(()=>contactForm.classList.remove("animate-shake"),500); alert("Network error!"); });
+            });
+
+            const newsletterForm = document.getElementById("newsletterForm");
+            newsletterForm?.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const button = newsletterForm.querySelector("button");
+                const originalText = button.innerHTML;
+                button.innerHTML = `<span class="loader border-t-2 border-b-2 border-black w-5 h-5 inline-block rounded-full animate-spin mr-2"></span> SUBSCRIBING...`;
+                button.disabled = true;
+                fetch("{% url 'subscribe_newsletter' %}", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                    body: new FormData(newsletterForm)
+                })
+                .then(res=>res.json())
+                .then(data=>{
+                    button.disabled=false; button.innerHTML=originalText;
+                    if(data.status==="success"){ newsletterForm.classList.add("animate-pulse-wave"); setTimeout(()=>newsletterForm.classList.remove("animate-pulse-wave"),1500); alert("Subscribed successfully!"); newsletterForm.reset();}
+                    else if(data.status==="exists"){ alert("You are already subscribed!");}
+                    else{ newsletterForm.classList.add("animate-shake"); setTimeout(()=>newsletterForm.classList.remove("animate-shake"),500); alert("Subscription failed. Try again.");}
+                }).catch(()=>{ button.disabled=false; button.innerHTML=originalText; newsletterForm.classList.add("animate-shake"); setTimeout(()=>newsletterForm.classList.remove("animate-shake"),500); alert("Network error!");});
+            });
+        });
+    </script>
+
+    <style>
+        ::-webkit-scrollbar{width:8px} ::-webkit-scrollbar-track{background:#0f0f0f} ::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#bc13fe,#00f3ff);border-radius:4px} ::-webkit-scrollbar-thumb:hover{background:#fff} ::selection{background:#00f3ff;color:#000}
+        .bg-grid{background-size:40px 40px;background-image:linear-gradient(to right, rgba(255,255,255,0.05) 1px,transparent 1px),linear-gradient(to bottom, rgba(255,255,255,0.05) 1px,transparent 1px);mask-image:radial-gradient(circle at center, black 40%, transparent 100%);animation:bg-scroll 60s linear infinite}
+        @keyframes bg-scroll{from{background-position:0 0}to{background-position:40px 40px}}
+        .glitch-hover:hover{ text-shadow:1px 0 0 #00f3ff,-1px 0 0 #bc13fe; animation: glitch-anim 0.2s infinite alternate}
+        @keyframes glitch-anim{0%{transform:translate(0)}20%{transform:translate(-2px,2px)}40%{transform:translate(-2px,-2px)}60%{transform:translate(2px,2px)}80%{transform:translate(2px,-2px)}100%{transform:translate(0)}}
+        @keyframes neonPulse{0%{text-shadow:0 0 5px #00f3ff,0 0 10px #00f3ff}100%{text-shadow:0 0 2px #00f3ff,0 0 4px #bc13fe}}
+        .neon-pulse{animation:neonPulse 2s ease-in-out infinite alternate}
+        .loader{border-top-color:transparent;border-bottom-color:transparent}
+    </style>
+</head>
+
+<body class="bg-cyber-dark text-gray-200 font-sans antialiased flex flex-col min-h-screen relative selection:bg-cyan-500 selection:text-black">
+    <!-- Background Effects -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute inset-0 bg-grid h-full w-full"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] animate-float"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-600/10 rounded-full blur-[128px] animate-float"></div>
+        <div class="absolute inset-0 z-10 opacity-5 pointer-events-none"><div class="absolute w-full h-px bg-white shadow-2xl animate-scanline"></div></div>
+        <div class="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-cyan-500/50 opacity-40"></div>
+        <div class="absolute top-16 left-0 w-8 h-px bg-cyan-500/50 opacity-40"></div>
+        <div class="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-pink-500/50 opacity-40"></div>
+        <div class="absolute bottom-16 right-0 w-8 h-px bg-pink-500/50 opacity-40"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed w-full top-0 z-50 transition-all duration-300 backdrop-blur-md bg-black/40 border-b border-white/10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- LOGO -->
+            <a href="{% url 'home' %}" class="group relative flex items-center gap-2">
+                <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-600 rounded flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+                    <span class="font-display font-bold text-black text-lg">G</span>
+                </div>
+                <h1 class="text-2xl font-display font-bold tracking-wider text-white glitch-hover">
+                    CYBER<span class="text-cyan-400">CARNAGE</span>
+                </h1>
+            </a>
+
+            <!-- DESKTOP NAV -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="{% url 'home' %}" class="text-gray-300 hover:text-white glitch-hover">GAMES</a>
+                <a href="{% url 'about_list' %}" class="text-gray-300 hover:text-white glitch-hover">ABOUT</a>
+                <a href="{% url 'gameinfo_list' %}" class="text-gray-300 hover:text-white glitch-hover">GAME LIST</a>
+            </nav>
+
+            <!-- MOBILE MENU BUTTON -->
+            <button class="md:hidden text-white focus:outline-none glitch-hover" onclick="toggleMenu()">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- MOBILE NAV -->
+        <div id="mobileNav" class="md:hidden hidden flex flex-col bg-black/90 border-t border-gray-700">
+            <a href="{% url 'home' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">GAMES</a>
+            <a href="{% url 'about_list' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">ABOUT</a>
+            <a href="{% url 'gameinfo_list' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">GAME LIST</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 pt-28 pb-12 relative z-10 flex-grow">
+        <div class="animate-fade-in">{% block content %}{% endblock %}</div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-white/10 bg-black/80 backdrop-blur-xl mt-auto">
+
+        <!-- TOP SYSTEM LOG -->
+        <div class="container mx-auto px-4 py-3 text-center border-b border-gray-700/50">
+            <p class="text-sm font-mono tracking-wider text-gray-500">
+                <span class="text-cyan-400 font-semibold neon-pulse">>> SYSTEM LOG: STATUS OPTIMAL <<</span>
+            </p>
+            <p class="text-lg font-display mt-1 text-white uppercase">
+                Design & Backend Architecture Engineered by
+                <span class="text-pink-500 font-extrabold glitch-hover">[ CODE2ENCODER ]</span>
+            </p>
+        </div>
+
+        <!-- MAIN FOOTER ROW -->
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+
+            <!-- LEFT LOGO SECTION -->
+            <div class="mb-4 md:mb-0">
+                <span class="font-display font-bold text-xl tracking-widest text-gray-400">
+                    CYBER<span class="text-cyan-600">CARNAGE</span>
+                </span>
+                <p class="text-xs text-gray-500 mt-1 font-mono">NEXT GEN GAMING DATABASE</p>
+            </div>
+
+            <!-- CENTER NAV LINKS -->
+            <div class="flex space-x-6 text-sm font-medium text-gray-400">
+                <a href="{% url 'privacy' %}" class="hover:text-cyan-400 transition-colors glitch-hover">Privacy</a>
+                <a href="{% url 'terms' %}" class="hover:text-cyan-400 transition-colors glitch-hover">Terms</a>
+                <a href="{% url 'faq' %}" class="hover:text-cyan-400 transition-colors glitch-hover">F.A.Q</a>
+                <a onclick="openContact()" class="hover:text-cyan-400 transition-colors cursor-pointer glitch-hover">Contact</a>
+            </div>
+
+            <!-- RIGHT SOCIAL ICONS -->
+            <div class="flex space-x-6 text-gray-400 mt-4 md:mt-0">
+
+                <!-- Instagram -->
+                <a href="https://www.instagram.com/code2encoder/" target="_blank"
+                   class="hover:text-pink-500 transition-colors glitch-hover">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M7 2C4.2 2 2 4.2 2 7v10c0 2.8 2.2 5 5 5h10c2.8 0 5-2.2 5-5V7c0-2.8-2.2-5-5-5H7zm10 2c1.7 0 3 1.3 3 3v10c0 1.7-1.3 3-3 3H7c-1.7 0-3-1.3-3-3V7c0-1.7 1.3-3 3-3h10zm-5 3.5A4.5 4.5 0 1016.5 12 4.5 4.5 0 0012 7.5zm0 7A2.5 2.5 0 1114.5 12 2.5 2.5 0 0112 14.5zm4.8-8.9a1.1 1.1 0 11-1.1-1.1 1.1 1.1 0 011.1 1.1z"/>
+                    </svg>
+                </a>
+
+                <!-- LinkedIn -->
+                <a href="www.linkedin.com/in/hafiz-muhammad-abdullah-ibrahim-38b586243" target="_blank"
+                   class="hover:text-blue-500 transition-colors glitch-hover">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4.98 3.5a2.5 2.5 0 11-.01 5.01 2.5 2.5 0 01.01-5.01zM3 9h4v12H3zM14.5 9c-2.5 0-4 1.7-4 1.7V9H7v12h3.5v-6.5s0-2.5 2.5-2.5 2.5 2.5 2.5 2.5V21H19V14.2C19 10 16.5 9 14.5 9z"/>
+                    </svg>
+                </a>
+
+                <!-- GitHub -->
+                <a href="https://github.com/Abdullahkhan000" target="_blank"
+                   class="hover:text-blue-500 transition-colors glitch-hover">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.37 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.387.6.113.82-.26.82-.577
+                                 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.09-.745.083-.73.083-.73
+                                 1.205.084 1.84 1.237 1.84 1.237 1.07 1.835 2.807 1.305 3.492.998.108-.776.418-1.305.76-1.605-2.665-.303-5.467-1.332-5.467-5.93
+                                 0-1.31.468-2.38 1.235-3.22-.123-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.3 1.23a11.52 11.52 0 013.003-.403c1.02.005
+                                 2.045.138 3.003.403 2.29-1.552 3.296-1.23 3.296-1.23.653 1.653.242 2.873.12 3.176.77.84 1.233 1.91 1.233 3.22
+                                 0 4.61-2.807 5.625-5.48 5.922.43.37.823 1.096.823 2.21 0 1.595-.015 2.877-.015 3.267 0 .32.216.694.825.576C20.565 21.796
+                                 24 17.3 24 12c0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                </a>
+
+
+            </div>
+        </div>
+
+        <!-- SMALL DIVIDER -->
+        <div class="h-[1px] w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+
+        <!-- SUBSCRIBE SECTION -->
+        <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-center items-center gap-4">
+            <h3 class="text-white font-display font-bold text-lg glitch-hover">Subscribe to Updates</h3>
+
+            <form id="newsletterForm" class="flex flex-col md:flex-row gap-2 w-full max-w-md">
+                <input type="email" name="email" placeholder="Your email" required
+                       class="w-full bg-black/40 border border-cyan-400/30 rounded px-4 py-2 text-white placeholder-gray-500
+                       focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"/>
+
+                <button type="submit"
+                        class="bg-cyan-400 hover:bg-cyan-500 text-black font-bold px-4 py-2 rounded-lg glitch-hover">
+                    SUBSCRIBE
+                </button>
+            </form>
+        </div>
+
+    </footer>
+
+
+
+    <!-- CONTACT MODAL -->
+    <div id="contactModal" class="fixed inset-0 bg-black/80 backdrop-blur-xl z-[999] hidden flex items-center justify-center">
+        <div class="relative w-full max-w-xl bg-cyber-gray p-8 rounded-xl border border-cyan-400/40 shadow-xl animate-fade-in">
+            <button onclick="closeContact()" class="absolute top-3 right-3 text-gray-400 hover:text-white text-2xl glitch-hover">×</button>
+            <h2 class="text-3xl font-display font-bold text-center text-white mb-6 glitch-hover">CONTACT <span class="text-cyan-400">SYSTEM</span></h2>
+            <form id="contactForm" class="space-y-5">
+                <div><label class="block text-sm text-gray-300 font-semibold mb-1">Your Name</label>
+                    <input name="name" type="text" required class="w-full bg-black/40 border border-cyan-400/30 rounded px-4 py-2 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-white placeholder-gray-500 font-mono"/></div>
+                <div><label class="block text-sm text-gray-300 font-semibold mb-1">Email</label>
+                    <input name="email" type="email" required class="w-full bg-black/40 border border-pink-500/30 rounded px-4 py-2 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 text-white placeholder-gray-500 font-mono"/></div>
+                <div><label class="block text-sm text-gray-300 font-semibold mb-1">Message</label>
+                    <textarea name="message" rows="4" required class="w-full bg-black/40 border border-purple-500/30 rounded px-4 py-2 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-white placeholder-gray-500 font-mono"></textarea></div>
+                <button type="submit" id="sendBtn" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-lg text-black font-display font-bold tracking-widest hover:opacity-90 glitch-hover transition">SEND MESSAGE</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
