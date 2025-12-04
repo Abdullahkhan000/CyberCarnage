@@ -137,5 +137,7 @@ EMAIL_HOST_USER = "ai8526304@gmail.com"
 EMAIL_HOST_PASSWORD = "rjcx zxxf dmnd ooic"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_ROOT = BASE_DIR / 'staticfiles'
