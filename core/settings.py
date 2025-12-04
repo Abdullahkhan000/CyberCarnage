@@ -26,13 +26,18 @@ SECRET_KEY = "django-insecure-j-xbn2g--g=mi3vblaxt7&vpr*=1fk-a4p8p1%hs(%!avwi%z4
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'cybercarnage.onrender.com',
-    'www.cybercarnage.com',
-    'cyber-carnage.vercel.app',
-    'cyber-carnage-7fad0cfna.vercel.app'
+    "localhost",
+    "127.0.0.1",
+    "cybercarnage.onrender.com",
+    "www.cybercarnage.com",
+
+    # Vercel domains
+    "cyber-carnage.vercel.app",
+    "cyber-carnage-7fad0cfna.vercel.app",
+    # if i add temporary domains
+    ".vercel.app",
 ]
+
 
 
 
