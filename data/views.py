@@ -9,6 +9,8 @@ from django.shortcuts import render, get_object_or_404
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+import google.generativeai as genai
+from django.views.decorators.csrf import csrf_exempt
 
 
 class GameView(APIView):
@@ -279,3 +281,31 @@ def subscribe_newsletter(request):
                 return JsonResponse({"status": "success"})
             return JsonResponse({"status": "exists"})
     return JsonResponse({"status": "error"})
+
+
+@csrf_exempt
+def gemini_chat(request):
+    if request.method == 'POST':
+        user_input = request.POST.get('message', '')
+
+        genai.configure(api_key="AIzaSyAl_y5Op44UWa8z9RvC0OALixHRTRPsaKA")
+
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-pro",
+            generation_config={
+                "max_output_tokens": 2048,
+                "temperature": 0.7,
+            }
+        )
+
+        try:
+            response = model.generate_content(user_input)
+            ai_response = response.text
+        except Exception as e:
+            print("GEMINI ERROR:", e)
+            ai_response = f"Error: {str(e)}"
+
+        return JsonResponse({'response': ai_response})
+
+    # GET request → render template
+    return render(request, 'data/gemini_chat.html')

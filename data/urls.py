@@ -27,4 +27,6 @@ urlpatterns = [
     path("/<int:pk>/", views.about_detail_view, name="about_detail"),
 
     path("send/", views.send_contact, name="send_contact"),
+
+    path("ai/", views.gemini_chat, name="AI_chat")
 ]

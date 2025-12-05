@@ -11,7 +11,6 @@ CYBERCARNAGE | MAIN CATALOGUE
     from { opacity: 0; transform: translateY(50px); }
     to { opacity: 1; transform: translateY(0); }
   }
-
   .card-entry { animation: slideInUp 0.6s ease-out forwards; }
 
   @keyframes borderPulse {
@@ -19,7 +18,6 @@ CYBERCARNAGE | MAIN CATALOGUE
     50% { border-color: rgba(255, 255, 255, 0.8); box-shadow: 0 0 25px rgba(255, 255, 255, 0.7); }
     100% { border-color: rgba(236, 72, 153, 0.5); box-shadow: 0 0 10px rgba(236, 72, 153, 0.4); }
   }
-
   .group:hover .pulsing-border { animation: borderPulse 0.5s infinite alternate; }
 
   @keyframes dynamicPan {
@@ -27,24 +25,29 @@ CYBERCARNAGE | MAIN CATALOGUE
     50% { transform: scale(1.05) translateX(-5%); }
     100% { transform: scale(1.1) translateX(0); }
   }
-
-  .poster-move {
-    animation: dynamicPan 20s linear infinite alternate;
-    transform-origin: top left;
-  }
+  .poster-move { animation: dynamicPan 20s linear infinite alternate; transform-origin: top left; }
 </style>
 
 <div class="relative z-10 container mx-auto px-4 py-12">
 
-  <div class="text-center mb-16 border-b-2 border-cyan-500/30 pb-4">
-    <h2 class="text-5xl md:text-7xl font-display font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.5)] glitch-hover">
+  <!-- HERO SECTION -->
+  <div class="text-center mb-16 border-b-2 border-cyan-500/30 pb-8">
+    <h1 class="text-6xl md:text-8xl font-display font-black uppercase tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.5)] glitch-hover mb-4">
       MAIN CATALOGUE
-    </h2>
-    <p class="text-gray-400 mt-4 text-lg font-mono tracking-wide">
-      ACCESSING <span class="text-pink-400">>></span> {{ games|length }} RECORDS FOUND.
+    </h1>
+    <p class="text-gray-400 mt-2 text-lg font-mono tracking-wide mb-6">
+      Explore all <span class="text-pink-400">>> {{ games|length }}</span> games in our records.
+    </p>
+    <a href="{% url 'AI_chat' %}"
+       class="inline-block bg-cyan-400 hover:bg-cyan-500 text-black font-bold px-6 py-3 rounded-lg glitch-hover transition text-lg">
+      ASK CYBERCARNAGE AI FOR GAME INFO
+    </a>
+    <p class="text-gray-500 text-sm font-mono mt-2">
+      Click the button above to interact with our AI assistant and get detailed game info!
     </p>
   </div>
 
+  <!-- FILTERS -->
   <div class="mb-8 p-4 bg-gray-800/50 rounded-xl border border-gray-700/50 backdrop-blur-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
       <input type="text" id="filter-game-name" placeholder="Game Name" class="px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white">
       <input type="text" id="filter-series" placeholder="Series" class="px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white">
@@ -56,6 +59,7 @@ CYBERCARNAGE | MAIN CATALOGUE
       </button>
   </div>
 
+  <!-- CARDS GRID -->
   <div id="cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
     {% for game in games %}
       {% with detail=game.details.first %}
@@ -109,7 +113,6 @@ CYBERCARNAGE | MAIN CATALOGUE
                 <span class="text-xs uppercase tracking-wider">STEAM ID:</span>
                 <span class="text-green-400 font-semibold ml-10">{{ detail.steam_appid }}</span>
               </p>
-
             </div>
 
             <div class="text-center mt-6">
@@ -181,7 +184,6 @@ CYBERCARNAGE | MAIN CATALOGUE
     }
   }
 
-  // Event listeners
   Object.values(filters).forEach(input => {
     input.addEventListener('input', () => applyFilters());
     input.addEventListener('keypress', e => {
@@ -194,7 +196,6 @@ CYBERCARNAGE | MAIN CATALOGUE
 
   document.getElementById('apply-filters').addEventListener('click', () => applyFilters());
 
-  // Initialize from URL params
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('game_name')) filters.gameName.value = params.get('game_name');

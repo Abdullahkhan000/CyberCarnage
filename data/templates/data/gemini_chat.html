@@ -1,0 +1,268 @@
+{% extends 'data/base.html' %}
+{% block title %}Gemini Chat | CyberCarnage{% endblock %}
+
+{% block content %}
+
+<div class="flex h-screen bg-black/90 text-white">
+
+    <!-- ---------------- SIDEBAR ---------------- -->
+    <div id="sidebar" class="w-64 bg-black/80 border-r border-white/10 flex flex-col transition-all duration-300">
+
+        <!-- Toggle button -->
+        <button id="toggle-sidebar" class="bg-cyan-400 text-black p-2 m-2 rounded hover:bg-cyan-500">
+            ☰ Chats
+        </button>
+
+        <!-- New chat button -->
+        <button id="new-chat" class="bg-green-500 text-black p-2 m-2 rounded hover:bg-green-600">
+            + New Chat
+        </button>
+
+        <!-- Chats list -->
+        <div id="chat-list" class="flex-1 overflow-y-auto p-2 space-y-2">
+            <!-- Individual chat items will be added dynamically -->
+        </div>
+    </div>
+
+    <!-- ---------------- MAIN CHAT AREA ---------------- -->
+    <div class="flex-1 flex flex-col relative">
+
+        <!-- TITLE -->
+        <h2 class="text-4xl md:text-5xl font-display font-black text-center text-white glitch-hover mb-6 mt-6">
+            Ask <span class="text-cyan-400">CYBERCARNAGE AI</span>
+        </h2>
+
+        <!-- CHAT HISTORY -->
+        <div id="chat-history"
+             class="flex flex-col gap-8 overflow-y-auto flex-1 pb-6
+                    scrollbar-thin scrollbar-thumb-cyan-400 scrollbar-track-black/20 px-2">
+        </div>
+
+        <!-- LOADING + STOP BUTTON -->
+        <div id="loader-area" class="hidden flex items-center gap-5 mt-3 px-2">
+            <div class="flex items-center gap-3 text-cyan-400 font-bold">
+                <span class="loader border-t-2 border-b-2 border-cyan-400 w-5 h-5 rounded-full animate-spin"></span>
+                Generating...
+            </div>
+
+            <button id="stop-btn"
+                class="text-red-400 border border-red-400 px-3 py-1 rounded-lg hover:bg-red-400 hover:text-black transition">
+                Stop Generating
+            </button>
+        </div>
+
+        <!-- INPUT AREA -->
+        <form id="chat-form" class="flex gap-3 mt-4 px-2 pb-10">
+            <textarea id="message" placeholder="Type your message..."
+                class="flex-1 px-4 py-3 rounded-lg bg-black/40 border border-cyan-400/30
+                       text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400
+                       focus:ring-1 focus:ring-cyan-400 h-14 resize-none"></textarea>
+
+            <button type="submit"
+                    class="bg-cyan-400 hover:bg-cyan-500 text-black font-bold px-6 py-3
+                           rounded-lg glitch-hover transition">
+                SEND
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+let controller = null;
+
+/* ---------------- UTILITIES ---------------- */
+function timestamp() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function linkify(text) {
+    return text.replace(/(https?:\/\/[^\s]+)/g,
+        url => `<a href="${url}" target="_blank" class="text-cyan-400 underline">${url}</a>`
+    );
+}
+
+function formatCode(text) {
+    return text.replace(/```([\s\S]*?)```/g, (match, code) => `
+<pre class="bg-black/60 border border-purple-500 text-purple-300 px-4 py-3 rounded-lg overflow-x-auto font-mono whitespace-pre-wrap mt-2">
+${code}
+</pre>`);
+}
+
+function formatMarkdown(t) {
+    let f = t;
+    f = f.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-cyan-300 mt-2 mb-1">$1</h3>');
+    f = f.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-cyan-300 mt-2 mb-1">$1</h2>');
+    f = f.replace(/^# (.*$)/gim,  '<h1 class="text-3xl font-bold text-cyan-300 mt-2 mb-1">$1</h1>');
+    f = f.replace(/^\- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>');
+    f = f.replace(/^\d+\. (.*$)/gim, '<li class="ml-6 list-decimal">$1</li>');
+    f = f.replace(/(<li[\s\S]*?<\/li>)/gim, '<ul class="mb-3">$1</ul>');
+    return f;
+}
+
+/* ---------------- RENDERING ---------------- */
+function renderUser(text, time) {
+    const wrap = document.createElement("div");
+    wrap.className = "flex justify-end px-2";
+    wrap.innerHTML = `<div class="bg-cyan-400 text-black px-4 py-2 rounded-xl max-w-[75%] shadow-lg leading-relaxed">${text}</div>`;
+    chatHistory.appendChild(wrap);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function renderAIBlock() {
+    const wrap = document.createElement("div");
+    wrap.className = "flex flex-col gap-1 px-2";
+
+    const bubble = document.createElement("div");
+    bubble.className = "text-gray-200 leading-relaxed text-[1.08rem] whitespace-pre-wrap";
+
+    const timeEl = document.createElement("div");
+    timeEl.className = "text-gray-500 text-xs mt-1";
+
+    wrap.appendChild(bubble);
+    wrap.appendChild(timeEl);
+    chatHistory.appendChild(wrap);
+
+    return { bubble, timeEl, wrap };
+}
+
+function streamAI(text, block, time) {
+    let i = 0;
+    const stream = setInterval(() => {
+        block.bubble.innerHTML = formatMarkdown(formatCode(linkify(text.slice(0, i))));
+        i++;
+        if (i > text.length) {
+            clearInterval(stream);
+            block.timeEl.innerText = time;
+        }
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }, 6);
+    return stream;
+}
+
+/* ---------------- LOCAL STORAGE ---------------- */
+function saveChat(chatId, role, text, time) {
+    let allChats = JSON.parse(localStorage.getItem("ai_chats") || "[]");
+    let chat = allChats.find(c => c.id === chatId);
+    if(!chat){
+        chat = {id: chatId, messages: []};
+        allChats.push(chat);
+    }
+    chat.messages.push({role, text, time});
+    localStorage.setItem("ai_chats", JSON.stringify(allChats));
+}
+
+function loadChat(chatId){
+    chatHistory.innerHTML = "";
+    const allChats = JSON.parse(localStorage.getItem("ai_chats") || "[]");
+    const chat = allChats.find(c => c.id === chatId);
+    if(!chat) return;
+    chat.messages.forEach(m => {
+        if(m.role === "user") renderUser(m.text, m.time);
+        else{
+            const block = renderAIBlock();
+            block.bubble.innerHTML = formatMarkdown(formatCode(linkify(m.text)));
+            block.timeEl.innerText = m.time;
+        }
+    });
+}
+
+/* ---------------- SIDEBAR LOGIC ---------------- */
+let chats = JSON.parse(localStorage.getItem("ai_chats") || "[]");
+let currentChatId = chats.length ? chats[0].id : Date.now();
+
+const chatList = document.getElementById("chat-list");
+
+function renderChatListSidebar(){
+    chatList.innerHTML = "";
+    chats.forEach(chat => {
+        const el = document.createElement("div");
+        el.className = "cursor-pointer px-3 py-2 rounded hover:bg-cyan-400/20";
+        el.innerText = "Chat " + chat.id;
+        if(chat.id === currentChatId) el.classList.add("bg-cyan-400/30");
+        el.onclick = () => {
+            currentChatId = chat.id;
+            loadChat(currentChatId);
+            renderChatListSidebar();
+        }
+        chatList.appendChild(el);
+    });
+}
+
+renderChatListSidebar();
+loadChat(currentChatId);
+
+document.getElementById("new-chat").onclick = () => {
+    const newId = Date.now();
+    chats.push({id:newId, messages:[]});
+    currentChatId = newId;
+    localStorage.setItem("ai_chats", JSON.stringify(chats));
+    renderChatListSidebar();
+    loadChat(currentChatId);
+}
+
+document.getElementById("toggle-sidebar").onclick = () => {
+    if(sidebar.style.width === "0px" || sidebar.style.width === ""){
+        sidebar.style.width = "16rem";
+    } else {
+        sidebar.style.width = "0px";
+    }
+}
+
+/* ---------------- MAIN CHAT FORM ---------------- */
+const chatForm = document.getElementById("chat-form");
+const messageInput = document.getElementById("message");
+const chatHistory = document.getElementById("chat-history");
+const loaderArea = document.getElementById("loader-area");
+const stopBtn = document.getElementById("stop-btn");
+
+chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = messageInput.value.trim();
+    if(!msg) return;
+    const time = timestamp();
+    messageInput.value = "";
+    renderUser(msg, time);
+    saveChat(currentChatId, "user", msg, time);
+    loaderArea.classList.remove("hidden");
+
+    controller = new AbortController();
+    try{
+        const res = await fetch("{% url 'AI_chat' %}", {
+            method: "POST",
+            headers:{
+                "Content-Type":"application/x-www-form-urlencoded",
+                "X-CSRFToken":"{{ csrf_token }}"
+            },
+            body:`message=${encodeURIComponent(msg)}`,
+            signal: controller.signal
+        });
+        const data = await res.json();
+        loaderArea.classList.add("hidden");
+        const block = renderAIBlock();
+        streamAI(data.response, block, time);
+        saveChat(currentChatId, "ai", data.response, time);
+    }catch(e){
+        loaderArea.classList.add("hidden");
+        renderAIBlock().bubble.innerText = "⚠️ Response stopped.";
+    }
+});
+
+stopBtn.addEventListener("click", ()=>{
+    if(controller) controller.abort();
+    loaderArea.classList.add("hidden");
+});
+
+messageInput.addEventListener("keydown", (e)=>{
+    if(e.key==="Enter" && !e.shiftKey){
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event("submit"));
+    }
+});
+</script>
+
+<style>
+.loader { border-top-width:2px; border-bottom-width:2px; }
+</style>
+
+{% endblock %}

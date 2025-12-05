@@ -76,7 +76,7 @@
                 e.preventDefault();
                 sendBtn.innerHTML = `<span class="loader border-t-2 border-b-2 border-white w-5 h-5 inline-block rounded-full animate-spin mr-2"></span> SENDING...`;
                 sendBtn.disabled = true;
-                fetch("/contact/send/", {
+                fetch("send/", {
                     method: "POST",
                     headers: { "X-CSRFToken": "{{ csrf_token }}" },
                     body: new FormData(this)
