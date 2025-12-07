@@ -1,268 +1,246 @@
 {% extends 'data/base.html' %}
-{% block title %}Gemini Chat | CyberCarnage{% endblock %}
-
+{% block title %}CyberCarnage AI | ChatGPT Clone{% endblock %}
 {% block content %}
 
-<div class="flex h-screen bg-black/90 text-white">
+<div class="max-w-4xl mx-auto mt-6 pb-10 px-4">
 
-    <!-- ---------------- SIDEBAR ---------------- -->
-    <div id="sidebar" class="w-64 bg-black/80 border-r border-white/10 flex flex-col transition-all duration-300">
+    <h2 class="text-5xl font-display font-black text-center text-transparent bg-clip-text
+        bg-gradient-to-r from-pink-500 to-cyan-400 mb-8 glitch-hover">
+        CYBER<span class="text-cyan-400">CARNAGE AI</span>
+    </h2>
 
-        <!-- Toggle button -->
-        <button id="toggle-sidebar" class="bg-cyan-400 text-black p-2 m-2 rounded hover:bg-cyan-500">
-            ☰ Chats
-        </button>
-
-        <!-- New chat button -->
-        <button id="new-chat" class="bg-green-500 text-black p-2 m-2 rounded hover:bg-green-600">
-            + New Chat
-        </button>
-
-        <!-- Chats list -->
-        <div id="chat-list" class="flex-1 overflow-y-auto p-2 space-y-2">
-            <!-- Individual chat items will be added dynamically -->
-        </div>
+    <div id="chat-history"
+         class="bg-[#0B0B0B]/80 border border-white/10 rounded-2xl shadow-2xl
+                backdrop-blur-xl p-6 space-y-6 max-h-[70vh] overflow-y-auto">
     </div>
 
-    <!-- ---------------- MAIN CHAT AREA ---------------- -->
-    <div class="flex-1 flex flex-col relative">
-
-        <!-- TITLE -->
-        <h2 class="text-4xl md:text-5xl font-display font-black text-center text-white glitch-hover mb-6 mt-6">
-            Ask <span class="text-cyan-400">CYBERCARNAGE AI</span>
-        </h2>
-
-        <!-- CHAT HISTORY -->
-        <div id="chat-history"
-             class="flex flex-col gap-8 overflow-y-auto flex-1 pb-6
-                    scrollbar-thin scrollbar-thumb-cyan-400 scrollbar-track-black/20 px-2">
-        </div>
-
-        <!-- LOADING + STOP BUTTON -->
-        <div id="loader-area" class="hidden flex items-center gap-5 mt-3 px-2">
-            <div class="flex items-center gap-3 text-cyan-400 font-bold">
-                <span class="loader border-t-2 border-b-2 border-cyan-400 w-5 h-5 rounded-full animate-spin"></span>
-                Generating...
-            </div>
-
-            <button id="stop-btn"
-                class="text-red-400 border border-red-400 px-3 py-1 rounded-lg hover:bg-red-400 hover:text-black transition">
-                Stop Generating
-            </button>
-        </div>
-
-        <!-- INPUT AREA -->
-        <form id="chat-form" class="flex gap-3 mt-4 px-2 pb-10">
-            <textarea id="message" placeholder="Type your message..."
-                class="flex-1 px-4 py-3 rounded-lg bg-black/40 border border-cyan-400/30
-                       text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400
-                       focus:ring-1 focus:ring-cyan-400 h-14 resize-none"></textarea>
-
-            <button type="submit"
-                    class="bg-cyan-400 hover:bg-cyan-500 text-black font-bold px-6 py-3
-                           rounded-lg glitch-hover transition">
-                SEND
-            </button>
-        </form>
-
+    <div id="typing" class="hidden mt-3 text-cyan-400 font-bold flex gap-3 items-center">
+        <span class="loader border-t-2 border-b-2 border-cyan-400 w-5 h-5 rounded-full animate-spin"></span>
+        Thinking…
     </div>
+
+    <div class="mt-6 bg-[#111]/60 border border-white/20 rounded-2xl p-4 relative">
+        <textarea
+            id="message"
+            placeholder="Message CyberCarnage AI..."
+            rows="1"
+            class="w-full bg-transparent text-white resize-none outline-none font-mono"
+        ></textarea>
+
+        <button id="send-btn"
+            class="absolute right-4 bottom-4 text-cyan-400 hover:text-cyan-200 transition">
+            ➤
+        </button>
+    </div>
+
 </div>
 
 <script>
-let controller = null;
+const chatBox = document.getElementById("chat-history");
+const msgInput = document.getElementById("message");
+const sendBtn = document.getElementById("send-btn");
+const typing = document.getElementById("typing");
 
-/* ---------------- UTILITIES ---------------- */
-function timestamp() {
-    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+let editingMsg = null;
+let currentTypingInterval = null;
+
+// Save to Local Storage
+function saveMessage(type, text) {
+    const history = JSON.parse(localStorage.getItem('chat_history') || '[]');
+    history.push({ type, text });
+    localStorage.setItem('chat_history', JSON.stringify(history));
 }
 
-function linkify(text) {
-    return text.replace(/(https?:\/\/[^\s]+)/g,
-        url => `<a href="${url}" target="_blank" class="text-cyan-400 underline">${url}</a>`
-    );
-}
+// Auto-grow textarea
+msgInput.addEventListener("input", () => {
+    msgInput.style.height = "auto";
+    msgInput.style.height = msgInput.scrollHeight + "px";
+});
 
-function formatCode(text) {
-    return text.replace(/```([\s\S]*?)```/g, (match, code) => `
-<pre class="bg-black/60 border border-purple-500 text-purple-300 px-4 py-3 rounded-lg overflow-x-auto font-mono whitespace-pre-wrap mt-2">
-${code}
-</pre>`);
-}
-
-function formatMarkdown(t) {
-    let f = t;
-    f = f.replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-cyan-300 mt-2 mb-1">$1</h3>');
-    f = f.replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold text-cyan-300 mt-2 mb-1">$1</h2>');
-    f = f.replace(/^# (.*$)/gim,  '<h1 class="text-3xl font-bold text-cyan-300 mt-2 mb-1">$1</h1>');
-    f = f.replace(/^\- (.*$)/gim, '<li class="ml-6 list-disc">$1</li>');
-    f = f.replace(/^\d+\. (.*$)/gim, '<li class="ml-6 list-decimal">$1</li>');
-    f = f.replace(/(<li[\s\S]*?<\/li>)/gim, '<ul class="mb-3">$1</ul>');
-    return f;
-}
-
-/* ---------------- RENDERING ---------------- */
-function renderUser(text, time) {
-    const wrap = document.createElement("div");
-    wrap.className = "flex justify-end px-2";
-    wrap.innerHTML = `<div class="bg-cyan-400 text-black px-4 py-2 rounded-xl max-w-[75%] shadow-lg leading-relaxed">${text}</div>`;
-    chatHistory.appendChild(wrap);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
-}
-
-function renderAIBlock() {
-    const wrap = document.createElement("div");
-    wrap.className = "flex flex-col gap-1 px-2";
-
-    const bubble = document.createElement("div");
-    bubble.className = "text-gray-200 leading-relaxed text-[1.08rem] whitespace-pre-wrap";
-
-    const timeEl = document.createElement("div");
-    timeEl.className = "text-gray-500 text-xs mt-1";
-
-    wrap.appendChild(bubble);
-    wrap.appendChild(timeEl);
-    chatHistory.appendChild(wrap);
-
-    return { bubble, timeEl, wrap };
-}
-
-function streamAI(text, block, time) {
+// Typewriter effect
+function typeWriter(el, text, speed=14) {
     let i = 0;
-    const stream = setInterval(() => {
-        block.bubble.innerHTML = formatMarkdown(formatCode(linkify(text.slice(0, i))));
-        i++;
-        if (i > text.length) {
-            clearInterval(stream);
-            block.timeEl.innerText = time;
-        }
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    }, 6);
-    return stream;
+    return new Promise((resolve) => {
+        currentTypingInterval = setInterval(() => {
+            if(i < text.length){
+                el.innerHTML += text.charAt(i);
+                i++;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                clearInterval(currentTypingInterval);
+                currentTypingInterval = null;
+                resolve();
+            }
+        }, speed);
+    });
 }
 
-/* ---------------- LOCAL STORAGE ---------------- */
-function saveChat(chatId, role, text, time) {
-    let allChats = JSON.parse(localStorage.getItem("ai_chats") || "[]");
-    let chat = allChats.find(c => c.id === chatId);
-    if(!chat){
-        chat = {id: chatId, messages: []};
-        allChats.push(chat);
+// Add User Message
+function addUserMessage(text, save=true) {
+    const div = document.createElement("div");
+    div.className = "flex items-start gap-3 justify-end animate-slide-in";
+
+    div.innerHTML = `
+        <div class="bg-cyan-400 text-black p-4 rounded-2xl max-w-[75%] shadow-lg font-mono">${text}</div>
+        <img src="/static/img/user.png" class="w-10 h-10 rounded-lg">
+        <div class="flex gap-2 mt-1">
+            <button class="edit-btn text-xs underline text-yellow-300">Edit</button>
+        </div>
+    `;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    div.querySelector(".edit-btn").onclick = () => {
+        msgInput.value = text;
+        msgInput.focus();
+        editingMsg = div.querySelector("div");
+        msgInput.style.height = msgInput.scrollHeight + "px";
+    };
+
+    if(save) saveMessage("user", text);
+}
+
+// Bind alerts for AI messages
+function bindCopyShareButtonsAI(container, text) {
+    const copyBtn = container.querySelector(".copy-btn");
+    const shareBtn = container.querySelector(".share-btn");
+
+    if(copyBtn){
+        copyBtn.onclick = () => navigator.clipboard.writeText(text)
+            .then(() => alert("✅ Copied to clipboard!"));
     }
-    chat.messages.push({role, text, time});
-    localStorage.setItem("ai_chats", JSON.stringify(allChats));
+
+    if(shareBtn){
+        shareBtn.onclick = () => navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`)
+            .then(() => alert("🔗 Share text copied!"));
+    }
 }
 
-function loadChat(chatId){
-    chatHistory.innerHTML = "";
-    const allChats = JSON.parse(localStorage.getItem("ai_chats") || "[]");
-    const chat = allChats.find(c => c.id === chatId);
-    if(!chat) return;
-    chat.messages.forEach(m => {
-        if(m.role === "user") renderUser(m.text, m.time);
-        else{
-            const block = renderAIBlock();
-            block.bubble.innerHTML = formatMarkdown(formatCode(linkify(m.text)));
-            block.timeEl.innerText = m.time;
-        }
-    });
-}
+// Add AI Message
+async function addAIMessage(text, save=true, instant=false) {
+    const wrap = document.createElement("div");
+    wrap.className = "flex items-start gap-3 animate-slide-in";
 
-/* ---------------- SIDEBAR LOGIC ---------------- */
-let chats = JSON.parse(localStorage.getItem("ai_chats") || "[]");
-let currentChatId = chats.length ? chats[0].id : Date.now();
+    wrap.innerHTML = `
+        <img src="/static/img/ai.png" class="w-10 h-10 rounded-lg opacity-70">
+        <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-gray-200 max-w-[80%]">
+            <div class="ai-text"></div>
+            <div class="flex gap-4 mt-2 text-xs">
+                <button class="copy-btn text-cyan-300 underline">Copy</button>
+                <button class="share-btn text-purple-300 underline">Share</button>
+            </div>
+        </div>
+    `;
+    chatBox.appendChild(wrap);
+    chatBox.scrollTop = chatBox.scrollHeight;
 
-const chatList = document.getElementById("chat-list");
+    const textDiv = wrap.querySelector(".ai-text");
 
-function renderChatListSidebar(){
-    chatList.innerHTML = "";
-    chats.forEach(chat => {
-        const el = document.createElement("div");
-        el.className = "cursor-pointer px-3 py-2 rounded hover:bg-cyan-400/20";
-        el.innerText = "Chat " + chat.id;
-        if(chat.id === currentChatId) el.classList.add("bg-cyan-400/30");
-        el.onclick = () => {
-            currentChatId = chat.id;
-            loadChat(currentChatId);
-            renderChatListSidebar();
-        }
-        chatList.appendChild(el);
-    });
-}
-
-renderChatListSidebar();
-loadChat(currentChatId);
-
-document.getElementById("new-chat").onclick = () => {
-    const newId = Date.now();
-    chats.push({id:newId, messages:[]});
-    currentChatId = newId;
-    localStorage.setItem("ai_chats", JSON.stringify(chats));
-    renderChatListSidebar();
-    loadChat(currentChatId);
-}
-
-document.getElementById("toggle-sidebar").onclick = () => {
-    if(sidebar.style.width === "0px" || sidebar.style.width === ""){
-        sidebar.style.width = "16rem";
+    if(instant){
+        textDiv.innerHTML = text;
     } else {
-        sidebar.style.width = "0px";
+        await typeWriter(textDiv, text);
     }
+
+    // Bind alert buttons for AI message
+    bindCopyShareButtonsAI(wrap, text);
+
+    if(save) saveMessage("ai", text);
 }
 
-/* ---------------- MAIN CHAT FORM ---------------- */
-const chatForm = document.getElementById("chat-form");
-const messageInput = document.getElementById("message");
-const chatHistory = document.getElementById("chat-history");
-const loaderArea = document.getElementById("loader-area");
-const stopBtn = document.getElementById("stop-btn");
-
-chatForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const msg = messageInput.value.trim();
+// Send Message
+async function sendMessage() {
+    const msg = msgInput.value.trim();
     if(!msg) return;
-    const time = timestamp();
-    messageInput.value = "";
-    renderUser(msg, time);
-    saveChat(currentChatId, "user", msg, time);
-    loaderArea.classList.remove("hidden");
 
-    controller = new AbortController();
+    if(editingMsg){
+        editingMsg.innerText = msg;
+        editingMsg = null;
+        msgInput.value = "";
+        msgInput.style.height = "auto";
+        return;
+    }
+
+    addUserMessage(msg);
+    msgInput.value = "";
+    msgInput.style.height = "auto";
+    typing.classList.remove("hidden");
+
+    sendBtn.innerText = "■";
+    sendBtn.classList.add("text-red-500");
+
+    let stopTyping = false;
+    sendBtn.onclick = () => {
+        if(currentTypingInterval){
+            clearInterval(currentTypingInterval);
+            currentTypingInterval = null;
+        }
+        stopTyping = true;
+        typing.classList.add("hidden");
+        sendBtn.innerText = "➤";
+        sendBtn.classList.remove("text-red-500");
+        sendBtn.onclick = sendMessage;
+    };
+
     try{
         const res = await fetch("{% url 'AI_chat' %}", {
             method: "POST",
-            headers:{
-                "Content-Type":"application/x-www-form-urlencoded",
-                "X-CSRFToken":"{{ csrf_token }}"
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token }}"
             },
-            body:`message=${encodeURIComponent(msg)}`,
-            signal: controller.signal
+            body: `message=${encodeURIComponent(msg)}`
         });
         const data = await res.json();
-        loaderArea.classList.add("hidden");
-        const block = renderAIBlock();
-        streamAI(data.response, block, time);
-        saveChat(currentChatId, "ai", data.response, time);
-    }catch(e){
-        loaderArea.classList.add("hidden");
-        renderAIBlock().bubble.innerText = "⚠️ Response stopped.";
+
+        if(!stopTyping){
+            await addAIMessage(data.response, true, false);
+        }
+
+    }catch(error){
+        console.error("❌ Something went wrong!", error);
+    }finally{
+        typing.classList.add("hidden");
+        if(currentTypingInterval){
+            clearInterval(currentTypingInterval);
+            currentTypingInterval = null;
+        }
+        sendBtn.innerText = "➤";
+        sendBtn.classList.remove("text-red-500");
+        sendBtn.onclick = sendMessage;
     }
-});
+}
 
-stopBtn.addEventListener("click", ()=>{
-    if(controller) controller.abort();
-    loaderArea.classList.add("hidden");
-});
-
-messageInput.addEventListener("keydown", (e)=>{
+// Button & Enter key
+sendBtn.onclick = sendMessage;
+msgInput.addEventListener("keypress", e => {
     if(e.key==="Enter" && !e.shiftKey){
         e.preventDefault();
-        chatForm.dispatchEvent(new Event("submit"));
+        sendMessage();
     }
 });
+
+// Load History
+window.onload = () => {
+    const history = JSON.parse(localStorage.getItem("chat_history") || "[]");
+
+    if(history.length === 0){
+        addAIMessage("👋 Welcome! Ask me anything.", false, false);
+    }
+
+    history.forEach(msg => {
+        if(msg.type === "user") addUserMessage(msg.text, false);
+        else addAIMessage(msg.text, false, true);
+    });
+};
 </script>
 
 <style>
-.loader { border-top-width:2px; border-bottom-width:2px; }
+#chat-history::-webkit-scrollbar { width: 7px; }
+#chat-history::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 4px; }
+
+@keyframes slideIn { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
+.animate-slide-in { animation: slideIn .45s ease; }
 </style>
 
 {% endblock %}

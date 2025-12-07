@@ -51,7 +51,7 @@ def notify_subscribers_new_game(sender, instance, created, **kwargs):
                 </div>
     
                 <div style="margin:25px 0;text-align:center;">
-                    <a href="https://yourwebsite.com/games/{instance.slug}/"
+                    <a href="https://cyber-carnage.vercel.app/{instance.slug}/"
                        style="padding:14px 32px;font-weight:700;border-radius:10px;
                               font-family:'Orbitron',sans-serif;font-size:16px;letter-spacing:1px;
                               background:#00eaff;color:#000;text-decoration:none;

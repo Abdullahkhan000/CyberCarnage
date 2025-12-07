@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import google.generativeai as genai
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 
 class GameView(APIView):
@@ -288,7 +289,7 @@ def gemini_chat(request):
     if request.method == 'POST':
         user_input = request.POST.get('message', '')
 
-        genai.configure(api_key="AIzaSyAl_y5Op44UWa8z9RvC0OALixHRTRPsaKA")
+        genai.configure(api_key=settings.GENAI_API_KEY)
 
         model = genai.GenerativeModel(
             model_name="gemini-2.5-pro",

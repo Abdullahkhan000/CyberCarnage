@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -153,3 +154,5 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+GENAI_API_KEY = config('AI_API_KEY')
