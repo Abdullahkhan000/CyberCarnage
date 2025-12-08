@@ -1,7 +1,7 @@
 {% extends 'data/base.html' %}
 {% block title %}CyberCarnage AI | ChatGPT Clone{% endblock %}
-{% block content %}
 
+{% block content %}
 <div class="max-w-4xl mx-auto mt-6 pb-10 px-4">
 
     <h2 class="text-5xl font-display font-black text-center text-transparent bg-clip-text
@@ -11,7 +11,7 @@
 
     <div id="chat-history"
          class="bg-[#0B0B0B]/80 border border-white/10 rounded-2xl shadow-2xl
-                backdrop-blur-xl p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+                backdrop-blur-xl p-6 space-y-6 max-h-[70vh] overflow-y-auto touch-auto">
     </div>
 
     <div id="typing" class="hidden mt-3 text-cyan-400 font-bold flex gap-3 items-center">
@@ -41,14 +41,13 @@ const msgInput = document.getElementById("message");
 const sendBtn = document.getElementById("send-btn");
 const typing = document.getElementById("typing");
 
-let editingMsg = null;
 let currentTypingInterval = null;
 
-// Save to Local Storage
-function saveMessage(type, text) {
-    const history = JSON.parse(localStorage.getItem('chat_history') || '[]');
-    history.push({ type, text });
-    localStorage.setItem('chat_history', JSON.stringify(history));
+// Generate Guest ID for anonymous user
+let guestId = localStorage.getItem("guest_id");
+if (!guestId) {
+    guestId = crypto.randomUUID();
+    localStorage.setItem("guest_id", guestId);
 }
 
 // Auto-grow textarea
@@ -76,51 +75,21 @@ function typeWriter(el, text, speed=14) {
 }
 
 // Add User Message
-function addUserMessage(text, save=true) {
+function addUserMessage(text) {
     const div = document.createElement("div");
     div.className = "flex items-start gap-3 justify-end animate-slide-in";
-
     div.innerHTML = `
         <div class="bg-cyan-400 text-black p-4 rounded-2xl max-w-[75%] shadow-lg font-mono">${text}</div>
         <img src="/static/img/user.png" class="w-10 h-10 rounded-lg">
-        <div class="flex gap-2 mt-1">
-            <button class="edit-btn text-xs underline text-yellow-300">Edit</button>
-        </div>
     `;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
-
-    div.querySelector(".edit-btn").onclick = () => {
-        msgInput.value = text;
-        msgInput.focus();
-        editingMsg = div.querySelector("div");
-        msgInput.style.height = msgInput.scrollHeight + "px";
-    };
-
-    if(save) saveMessage("user", text);
-}
-
-// Bind alerts for AI messages
-function bindCopyShareButtonsAI(container, text) {
-    const copyBtn = container.querySelector(".copy-btn");
-    const shareBtn = container.querySelector(".share-btn");
-
-    if(copyBtn){
-        copyBtn.onclick = () => navigator.clipboard.writeText(text)
-            .then(() => alert("✅ Copied to clipboard!"));
-    }
-
-    if(shareBtn){
-        shareBtn.onclick = () => navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`)
-            .then(() => alert("🔗 Share text copied!"));
-    }
 }
 
 // Add AI Message
-async function addAIMessage(text, save=true, instant=false) {
+async function addAIMessage(text) {
     const wrap = document.createElement("div");
     wrap.className = "flex items-start gap-3 animate-slide-in";
-
     wrap.innerHTML = `
         <img src="/static/img/ai.png" class="w-10 h-10 rounded-lg opacity-70">
         <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-gray-200 max-w-[80%]">
@@ -135,31 +104,18 @@ async function addAIMessage(text, save=true, instant=false) {
     chatBox.scrollTop = chatBox.scrollHeight;
 
     const textDiv = wrap.querySelector(".ai-text");
+    await typeWriter(textDiv, text);
 
-    if(instant){
-        textDiv.innerHTML = text;
-    } else {
-        await typeWriter(textDiv, text);
-    }
-
-    // Bind alert buttons for AI message
-    bindCopyShareButtonsAI(wrap, text);
-
-    if(save) saveMessage("ai", text);
+    wrap.querySelector(".copy-btn").onclick = () => navigator.clipboard.writeText(text)
+        .then(() => alert("✅ Copied to clipboard!"));
+    wrap.querySelector(".share-btn").onclick = () => navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`)
+        .then(() => alert("🔗 Share text copied!"));
 }
 
 // Send Message
 async function sendMessage() {
     const msg = msgInput.value.trim();
     if(!msg) return;
-
-    if(editingMsg){
-        editingMsg.innerText = msg;
-        editingMsg = null;
-        msgInput.value = "";
-        msgInput.style.height = "auto";
-        return;
-    }
 
     addUserMessage(msg);
     msgInput.value = "";
@@ -169,49 +125,35 @@ async function sendMessage() {
     sendBtn.innerText = "■";
     sendBtn.classList.add("text-red-500");
 
-    let stopTyping = false;
-    sendBtn.onclick = () => {
-        if(currentTypingInterval){
-            clearInterval(currentTypingInterval);
-            currentTypingInterval = null;
-        }
-        stopTyping = true;
-        typing.classList.add("hidden");
-        sendBtn.innerText = "➤";
-        sendBtn.classList.remove("text-red-500");
-        sendBtn.onclick = sendMessage;
-    };
-
     try{
         const res = await fetch("{% url 'AI_chat' %}", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": "{{ csrf_token }}"
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+                "X-GUEST-ID": guestId
             },
-            body: `message=${encodeURIComponent(msg)}`
+            body: JSON.stringify({message: msg})
         });
+
         const data = await res.json();
 
-        if(!stopTyping){
-            await addAIMessage(data.response, true, false);
+        if(data.error){
+            await addAIMessage(data.error);
+        } else {
+            await addAIMessage(data.response);
         }
 
     }catch(error){
         console.error("❌ Something went wrong!", error);
-    }finally{
+        await addAIMessage("❌ AI service unavailable. Try again.");
+    } finally {
         typing.classList.add("hidden");
-        if(currentTypingInterval){
-            clearInterval(currentTypingInterval);
-            currentTypingInterval = null;
-        }
         sendBtn.innerText = "➤";
         sendBtn.classList.remove("text-red-500");
-        sendBtn.onclick = sendMessage;
     }
 }
 
-// Button & Enter key
 sendBtn.onclick = sendMessage;
 msgInput.addEventListener("keypress", e => {
     if(e.key==="Enter" && !e.shiftKey){
@@ -220,24 +162,42 @@ msgInput.addEventListener("keypress", e => {
     }
 });
 
-// Load History
-window.onload = () => {
-    const history = JSON.parse(localStorage.getItem("chat_history") || "[]");
+// Load history from backend
+async function loadHistory() {
+    try {
+        const res = await fetch("{% url 'chat_history' %}", {
+            method: "GET",
+            headers: {"X-GUEST-ID": guestId}
+        });
+        const data = await res.json();
 
-    if(history.length === 0){
-        addAIMessage("👋 Welcome! Ask me anything.", false, false);
+        if(data.messages.length === 0){
+            // First-time user → show welcome message
+            await addAIMessage("👋 Welcome to CyberCarnage AI! Ask me anything.");
+        } else {
+            // Display messages in order
+            for(const msg of data.messages){
+                if(msg.role === "user") addUserMessage(msg.message);
+                else await addAIMessage(msg.message);
+            }
+        }
+
+        // Scroll to bottom after loading
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch(e) {
+        console.error("Error loading chat history", e);
+        await addAIMessage("❌ Failed to load chat history.");
     }
+}
 
-    history.forEach(msg => {
-        if(msg.type === "user") addUserMessage(msg.text, false);
-        else addAIMessage(msg.text, false, true);
-    });
-};
+window.onload = loadHistory;
 </script>
 
 <style>
 #chat-history::-webkit-scrollbar { width: 7px; }
 #chat-history::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 4px; }
+.touch-auto { touch-action: pan-y; }
 
 @keyframes slideIn { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
 .animate-slide-in { animation: slideIn .45s ease; }

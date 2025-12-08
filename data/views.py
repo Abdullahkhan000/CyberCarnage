@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
-from .models import Games , About , GameInfo , Subscriber
+from .models import Games , About , GameInfo , Subscriber , ChatMessage , GuestUser
 from rest_framework import status
-from .serializers import GameSerializer , GameInfoSerializer , AboutSerializer
+from .serializers import (GameSerializer , GameInfoSerializer , AboutSerializer , ChatResponseSerializer
+, ChatRequestSerializer , ChatHistorySerializer)
 from .filters import GameFilter , AboutFilter
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter , OrderingFilter
@@ -10,9 +11,9 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 import google.generativeai as genai
-from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-
+from .utils import can_use_ai , get_client_ip
+from datetime import date
 
 class GameView(APIView):
     search_fields = ["game_name","release_date", "series" , "developer" , "publisher"]
@@ -212,6 +213,79 @@ class AboutView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# Class ChatAPiView
+class ChatAPIView(APIView):
+    """
+    Anonymous Chat API with:
+    - Daily limit 4 messages
+    - IP + Fingerprint tracking
+    - Ban system
+    """
+    def post(self, request):
+        serializer = ChatRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        message = serializer.validated_data["message"]
+        guest_id = request.headers.get("X-GUEST-ID")
+        fingerprint = request.headers.get("X-FINGERPRINT")
+        ip_address = get_client_ip(request)
+
+        if not guest_id:
+            return Response({"error": "Guest ID missing"}, status=400)
+
+        user, created = GuestUser.objects.get_or_create(uuid=guest_id)
+        if created:
+            user.ip_address = ip_address
+            user.fingerprint = fingerprint
+            user.save()
+
+        if user.is_banned:
+            return Response({"error": "You are banned"}, status=status.HTTP_403_FORBIDDEN)
+
+        if not can_use_ai(user):
+            return Response({"error": "Daily limit reached (4 messages)"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+
+        # Save user message
+        ChatMessage.objects.create(user=user, role="user", message=message)
+        user.daily_count += 1
+        user.last_used = date.today()
+        user.save()
+
+        # Call Gemini AI
+        genai.configure(api_key=settings.GENAI_API_KEY)
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            generation_config={"max_output_tokens": 2048, "temperature": 0.7}
+        )
+        try:
+            response = model.generate_content(message)
+            ai_response = response.text
+        except Exception:
+            ai_response = "AI service temporarily unavailable"
+
+        # Save AI message
+        ChatMessage.objects.create(user=user, role="ai", message=ai_response)
+
+        response_data = ChatResponseSerializer({
+            "response": ai_response,
+            "remaining": 4 - user.daily_count
+        }).data
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+class ChatHistoryAPIView(APIView):
+    def get(self, request):
+        guest_id = request.headers.get("X-GUEST-ID")
+        user = GuestUser.objects.filter(uuid=guest_id).first()
+
+        if not user:
+            return Response({"messages": []}, status=200)
+
+        messages = ChatMessage.objects.filter(user=user).order_by("created_at")
+
+        serializer = ChatHistorySerializer(messages, many=True)
+        return Response({"messages": serializer.data}, status=200)
 
 def games_list_view(request):
     games = Games.objects.all()
@@ -225,9 +299,19 @@ def gameinfo_list_view(request):
     infos = GameInfo.objects.all()
     return render(request, "data/gameinfo_list.html", {"infos": infos})
 
-def about_detail_view(request, pk):
+def game_detail_view(request, pk, slug):
     about = get_object_or_404(About, pk=pk)
-    return render(request, "data/about_detail.html", {"about": about})
+
+    if about.game.slug != slug:
+        return redirect(
+            "game_detail",
+            pk=about.pk,
+            slug=about.game.slug
+        )
+
+    return render(request, "data/game_detail.html", {
+        "about": about
+    })
 
 def privacy_page(request):
     return render(request, "data/privacy.html")
@@ -283,30 +367,5 @@ def subscribe_newsletter(request):
             return JsonResponse({"status": "exists"})
     return JsonResponse({"status": "error"})
 
-
-@csrf_exempt
-def gemini_chat(request):
-    if request.method == 'POST':
-        user_input = request.POST.get('message', '')
-
-        genai.configure(api_key=settings.GENAI_API_KEY)
-
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-pro",
-            generation_config={
-                "max_output_tokens": 2048,
-                "temperature": 0.7,
-            }
-        )
-
-        try:
-            response = model.generate_content(user_input)
-            ai_response = response.text
-        except Exception as e:
-            print("GEMINI ERROR:", e)
-            ai_response = f"Error: {str(e)}"
-
-        return JsonResponse({'response': ai_response})
-
-    # GET request → render template
+def gemini_chat_view(request):
     return render(request, 'data/gemini_chat.html')

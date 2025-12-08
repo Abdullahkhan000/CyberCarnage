@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Games , GameInfo , About
+from .models import Games , GameInfo , About , ChatMessage , GuestUser
 from .utils import extract_steam_appid, fetch_rawg_poster
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -115,3 +115,32 @@ class AboutSerializer(serializers.Serializer):
 
 
 User = get_user_model()
+
+class ChatRequestSerializer(serializers.Serializer):
+    message = serializers.CharField(
+        max_length=5000,
+        allow_blank=False,
+        trim_whitespace=True
+    )
+
+class ChatResponseSerializer(serializers.Serializer):
+    response = serializers.CharField()
+    remaining = serializers.IntegerField()
+
+class GuestUserSerializer(serializers.Serializer):
+    uuid = serializers.CharField(read_only=True)
+    daily_count = serializers.IntegerField(read_only=True)
+    last_used = serializers.DateField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    ip_address = serializers.IPAddressField(read_only=True)
+    fingerprint = serializers.CharField(read_only=True)
+    is_banned = serializers.BooleanField(read_only=True)
+
+class ChatMessageSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    role = serializers.CharField(read_only=True)
+    message = serializers.CharField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+
+class ChatHistorySerializer(serializers.Serializer):
+    messages = ChatMessageSerializer(many=True)

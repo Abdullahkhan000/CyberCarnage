@@ -12,6 +12,10 @@ urlpatterns = [
     path("about_game/", views.AboutView.as_view()),
     path("about_game/<int:pk>/", views.AboutView.as_view()),
 
+    path("api/ai/", views.ChatAPIView.as_view(), name="api_ai_chat"),
+
+    path("chat-history/", views.ChatHistoryAPIView.as_view(), name="chat_history"),
+
     # ---------------- NEW CLEAN ROOT URLS ----------------
 
     path("", views.games_list_view, name="home"),
@@ -24,9 +28,15 @@ urlpatterns = [
 
     path("subscribe/", views.subscribe_newsletter, name="subscribe_newsletter"),
 
-    path("/<int:pk>/", views.about_detail_view, name="about_detail"),
+    # path("<int:pk>/", views.about_detail_view, name="about_detail"),
 
     path("send/", views.send_contact, name="send_contact"),
 
-    path("ai/", views.gemini_chat, name="AI_chat")
+    path("ai/", views.gemini_chat_view, name="AI_chat"),
+    path(
+        "game_detail/<int:pk>/<slug:slug>/",
+        views.game_detail_view,
+        name="game_detail"
+    ),
+
 ]

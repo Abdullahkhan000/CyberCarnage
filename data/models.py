@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import AbstractUser
+import uuid
+from django.utils import timezone
 
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -65,3 +67,23 @@ class Subscriber(models.Model):
 
     def __str__(self):
         return self.email
+
+
+class GuestUser(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    daily_count = models.IntegerField(default=0)
+    last_used = models.DateField(default=timezone.now)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    fingerprint = models.CharField(max_length=255, null=True, blank=True)
+    is_banned = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.uuid)
+
+class ChatMessage(models.Model):
+    ROLE_CHOICES = [("user", "User"), ("ai", "AI")]
+    user = models.ForeignKey(GuestUser, on_delete=models.CASCADE)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

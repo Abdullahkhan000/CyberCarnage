@@ -1,109 +1,158 @@
 {% extends "data/base.html" %}
-{% block title %}{{ about.game.game_name }} - DATA VIEW{% endblock %}
+{% block title %}{{ about.game.game_name }} Details{% endblock %}
 
 {% block content %}
 <style>
+/* --- Poster animation --- */
+@keyframes dynamicPan {
+    0% { transform: scale(1.15) translateX(0); }
+    50% { transform: scale(1.1) translateX(-8%); }
+    100% { transform: scale(1.15) translateX(0); }
+}
+.poster-move {
+    animation: dynamicPan 25s linear infinite alternate;
+    transform-origin: top left;
+}
 
-    @keyframes dynamicPan {
+/* --- Glitch text effect --- */
+.glitch-hover:hover {
+    text-shadow: 1px 0 0 #ff0000, -1px 0 0 #000;
+    animation: glitch-anim 0.2s infinite alternate;
+}
+@keyframes glitch-anim {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px,2px); }
+    40% { transform: translate(-2px,-2px); }
+    60% { transform: translate(2px,2px); }
+    80% { transform: translate(2px,-2px); }
+    100% { transform: translate(0); }
+}
 
-        0% { transform: scale(1.15) translateX(0); }
-        50% { transform: scale(1.10) translateX(-8%); }
-        100% { transform: scale(1.15) translateX(0); }
-    }
+/* --- Pulsing neon border --- */
+@keyframes subtleGlow {
+    0% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+    50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.5); }
+    100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+}
+.pulsing-card { animation: subtleGlow 4s ease-in-out infinite alternate; }
 
-
-    .poster-move {
-        animation: dynamicPan 25s linear infinite alternate;
-        transform-origin: top left;
-    }
-
-
-    .glitch-hover:hover {
-        text-shadow:
-            1px 0 0 #00f3ff,
-            -1px 0 0 #bc13fe;
-        animation: glitch-anim 0.2s infinite alternate;
-    }
-    @keyframes glitch-anim {
-        0% { transform: translate(0); }
-        20% { transform: translate(-2px, 2px); }
-        40% { transform: translate(-2px, -2px); }
-        60% { transform: translate(2px, 2px); }
-        80% { transform: translate(2px, -2px); }
-        100% { transform: translate(0); }
-    }
+/* --- Scrollable description & story --- */
+.scrollable {
+    max-height: 20rem;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+.scrollable::-webkit-scrollbar { width: 6px; }
+.scrollable::-webkit-scrollbar-thumb { background-color: #00f3ff; border-radius: 3px; }
+.scrollable::-webkit-scrollbar-track { background-color: rgba(0, 0, 0, 0.2); }
 </style>
 
-<div class="relative z-10 container mx-auto px-4 py-12">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
 
-    <div class="max-w-4xl mx-auto bg-cyber-gray/70 backdrop-blur-xl rounded-3xl border-2 border-cyan-500/30 shadow-[0_0_20px_rgba(0,243,255,0.2)] overflow-hidden animate-float">
+<div class="min-h-screen bg-black text-gray-100 py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <!-- Background grid & gradient -->
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black pointer-events-none"></div>
 
-        <div class="relative h-96">
-            <img src="{{ about.poster }}" alt="{{ about.game.game_name }}" class="w-full h-full object-cover brightness-75 transition duration-500 hover:brightness-100 poster-move">
+    <div class="relative z-10 max-w-4xl mx-auto">
+        <!-- Card -->
+        <div class="group relative bg-gray-900/70 backdrop-blur-md rounded-2xl border border-gray-700/50 overflow-hidden shadow-lg pulsing-card hover:shadow-[0_0_50px_rgba(168,85,247,0.5)] transition-all duration-500">
 
-            <div class="absolute inset-0 bg-gradient-to-t from-cyber-gray/90 via-transparent to-transparent"></div>
-
-            <h2 class="absolute bottom-0 left-6 pb-4 text-5xl md:text-6xl font-display font-extrabold uppercase tracking-tighter text-white drop-shadow-[0_0_8px_#bc13fe] glitch-hover">
-                {{ about.game.game_name }}
-            </h2>
-        </div>
-
-        <div class="p-8 md:p-12 text-gray-200">
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10 border-b border-white/10 pb-6">
-
-                <div class="flex flex-col items-start p-2 border-l-4 border-cyan-400">
-                    <span class="text-xs font-mono uppercase tracking-widest text-cyan-400 mb-1">Platform</span>
-                    <p class="text-xl font-bold glitch-hover">{{ about.platform }}</p>
-                </div>
-
-                <div class="flex flex-col items-start p-2 border-l-4 border-pink-500">
-                    <span class="text-xs font-mono uppercase tracking-widest text-pink-400 mb-1">Genre</span>
-                    <p class="text-xl font-bold glitch-hover">{{ about.genre }}</p>
-                </div>
-
-                <div class="flex flex-col items-start p-2 border-l-4 border-purple-500">
-                    <span class="text-xs font-mono uppercase tracking-widest text-purple-400 mb-1">Release Date</span>
-                    <p class="text-xl font-bold">{{ about.game.release_date }}</p>
-                </div>
-
-                <div class="flex flex-col items-start p-2 border-l-4 border-yellow-500">
-                    <span class="text-xs font-mono uppercase tracking-widest text-yellow-400 mb-1">Story Arc</span>
-                    <p class="text-xl font-bold">{{ about.story|default:"N/A" }}</p>
-                </div>
-
-                <div class="flex flex-col items-start p-2 border-l-4 border-gray-600">
-                    <span class="text-xs font-mono uppercase tracking-widest text-gray-500 mb-1">Access Level</span>
-                    <p class="text-xl font-bold">CLASSIFIED</p>
-                </div>
-
+            <!-- Poster -->
+            <div class="relative h-72 sm:h-96 md:h-[500px] overflow-hidden rounded-t-2xl">
+                <img src="{{ about.poster }}" alt="{{ about.game.game_name }}" class="w-full h-full object-cover poster-move" />
+                <!-- Platform badge -->
+                <span class="absolute top-3 right-3 z-20 bg-black/70 backdrop-blur-sm border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-bold uppercase px-2 py-1 rounded-full shadow-lg glitch-hover">
+                    {{ about.platform }}
+                </span>
+                <!-- Game name -->
+                <h1 class="absolute bottom-4 left-4 text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-white drop-shadow-[0_0_15px_#bc13fe] glitch-hover font-orbitron">
+                    {{ about.game.game_name }}
+                </h1>
             </div>
 
-            <div class="mb-10">
-                <h3 class="text-2xl font-display font-semibold mb-4 text-cyan-400 border-b border-cyan-600/50 pb-2">DATA LOG: SUMMARY</h3>
-                <p class="text-gray-300 leading-relaxed font-sans text-lg">
-                    {% if about.description %}
-                    {{ about.description }}
-                    {% else %}
-                    This file contains key operational data on the subject title. The game runs on the {{ about.platform }} architecture, classified under the {{ about.genre }} genre. All systems are operational as of release date {{ about.game.release_date }}. Further data access requires Level 4 clearance.
+            <!-- Content -->
+            <div class="p-4 sm:p-8 space-y-6">
+                <!-- Meta Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 border-b border-white/10 pb-4 sm:pb-6 auto-rows-min">
+                    <div class="border-l-4 border-purple-500 pl-3">
+                        <p class="text-xs text-purple-400 uppercase font-mono">Series</p>
+                        <p class="text-lg font-bold glitch-hover">{{ about.game.series|default:"N/A" }}</p>
+                    </div>
+                    <div class="border-l-4 border-green-500 pl-3">
+                        <p class="text-xs text-green-400 uppercase font-mono">Developer</p>
+                        <p class="text-lg font-bold glitch-hover">{{ about.game.developer|default:"N/A" }}</p>
+                    </div>
+                    <div class="border-l-4 border-yellow-500 pl-3">
+                        <p class="text-xs text-yellow-400 uppercase font-mono">Publisher</p>
+                        <p class="text-lg font-bold glitch-hover">{{ about.game.publisher|default:"N/A" }}</p>
+                    </div>
+                    <div class="border-l-4 border-cyan-500 pl-3">
+                        <p class="text-xs text-cyan-400 uppercase font-mono">Release</p>
+                        <p class="text-lg font-bold">{{ about.game.release_date|default:"N/A" }}</p>
+                    </div>
+                    <div class="border-l-4 border-pink-500 pl-3">
+                        <p class="text-xs text-pink-400 uppercase font-mono">Genre</p>
+                        <p class="text-lg font-bold glitch-hover">{{ about.genre|default:"N/A" }}</p>
+                    </div>
+                    <div class="border-l-4 border-indigo-500 pl-3">
+                        <p class="text-xs text-indigo-400 uppercase font-mono">Story Arc</p>
+                        <div class="text-lg font-bold glitch-hover scrollable">{{ about.story|default:"N/A" }}</div>
+                    </div>
+                    <div class="border-l-4 border-gray-600 pl-3">
+                        <p class="text-xs text-gray-400 uppercase font-mono">System ID</p>
+                        <p class="text-lg font-bold font-mono">{{ about.steam_appid|default:"N/A" }}</p>
+                    </div>
+                    <div class="border-l-4 border-red-500 pl-3">
+                        <p class="text-xs text-red-400 uppercase font-mono">Access</p>
+                        <p class="text-lg font-bold">CLASSIFIED</p>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="scrollable">
+                    <h3 class="text-xl sm:text-2xl font-display text-cyan-400 border-b border-cyan-600/40 pb-2 mb-4">
+                        DATA LOG: SUMMARY
+                    </h3>
+                    <p class="text-gray-300 leading-relaxed text-base sm:text-lg">
+                        {{ about.description|default:"This file contains key operational data on the subject title. Further access requires Level 4 clearance." }}
+                    </p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4 sm:mt-6 flex flex-wrap gap-3 sm:gap-4">
+                    {% if about.steam_link %}
+                    <a href="{{ about.steam_link }}" target="_blank"
+                        class="relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 p-[2px] shadow-lg transition-all group/btn focus:outline-none hover:brightness-125 w-full sm:w-auto">
+                        <span
+                            class="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#8b5cf6_0%,#3b82f6_50%,#8b5cf6_100%)] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></span>
+                        <span
+                            class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-lg bg-gray-900 px-4 sm:px-6 py-2 text-white font-bold tracking-wider backdrop-blur-3xl transition-all group-hover/btn:bg-transparent glitch-hover">
+                            ACCESS DATA: STEAM
+                        </span>
+                    </a>
                     {% endif %}
-                </p>
+                    {% if about.site_link %}
+                    <a href="{{ about.site_link }}" target="_blank"
+                        class="w-full sm:w-auto px-4 sm:px-6 py-2 bg-gray-800 text-white font-bold rounded-lg hover:brightness-110 transition-all shadow-lg glitch-hover">
+                        OFFICIAL SITE
+                    </a>
+                    {% endif %}
+                </div>
             </div>
-
-
-            {% if about.steam_link %}
-            <div class="text-center mt-8">
-                <a href="{{ about.steam_link }}" target="_blank" class="relative inline-flex items-center justify-center group/btn overflow-hidden rounded-full bg-gradient-to-r from-cyan-500 to-purple-600 p-[2px] focus:outline-none focus:ring-4 focus:ring-cyan-500/50">
-                    <span class="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#00f3ff_0%,#bc13fe_50%,#00f3ff_100%)] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></span>
-                    <span class="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-cyber-dark px-8 py-3 text-lg font-bold text-white tracking-wider backdrop-blur-3xl transition-all group-hover/btn:bg-transparent group-hover/btn:text-white group-hover/btn:shadow-[0_0_15px_#00f3ff] glitch-hover">
-                        <svg class="w-6 h-6 mr-3 group-hover/btn:animate-wiggle" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.979 0C5.666 0 .546 5.109.014 11.41l3.824 1.575a4.232 4.232 0 0 1 3.414-1.29l2.809-4.088c-.08-.474-.064-1.025.106-1.57.546-1.761 2.378-2.671 4.093-2.035 1.716.635 2.585 2.533 2.039 4.294-.523 1.688-2.261 2.617-3.951 2.083l-2.887 4.2c.414.542.673 1.229.658 1.996-.062 3.197-2.61 5.485-5.694 5.11-3.084-.376-5.263-3.153-4.868-6.204.225-1.741 1.267-3.13 2.709-3.93L.266 12.35C1.04 19.06 6.726 24 13.555 24 20.142 24 25.487 18.667 25.487 12.079 25.487 5.492 20.142 0 13.555 0h-1.576zM7.34 16.03c1.332.162 2.277 1.341 2.112 2.632-.165 1.292-1.4 2.185-2.732 2.022-1.332-.163-2.277-1.342-2.112-2.633.165-1.291 1.4-2.184 2.732-2.021z"/></svg>
-                        ACCESS DATA & DOWNLOAD
-                    </span>
-                </a>
-            </div>
-            {% endif %}
-
         </div>
     </div>
 </div>
+
+<script>
+module.exports = {
+    theme: {
+        extend: {
+            fontFamily: {
+                orbitron: ['Orbitron', 'sans-serif'],
+            }
+        }
+    }
+}
+</script>
 {% endblock %}

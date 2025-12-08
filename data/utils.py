@@ -1,10 +1,8 @@
 import re
 import requests
+from datetime import date
 
 def extract_steam_appid(url):
-    """
-    Extract Steam AppID from: https://store.steampowered.com/app/570/Dota_2/
-    """
     match = re.search(r'/app/(\d+)', url)
     return int(match.group(1)) if match else None
 
@@ -28,3 +26,22 @@ def fetch_rawg_poster(game_name, slug=None):
         return None
     except:
         return None
+
+
+
+def can_use_ai(user, daily_limit=4):
+    today = date.today()
+    if user.last_used != today:
+        user.daily_count = 0
+        user.last_used = today
+        user.save()
+
+    return user.daily_count < daily_limit
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0]
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+    return ip
