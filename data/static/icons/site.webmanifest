@@ -1,1 +1,30 @@
-{"name":"","short_name":"","icons":[{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#ffffff","background_color":"#ffffff","display":"standalone"}
+{
+  "name": "CyberCarnage AI",
+  "short_name": "CyberCarnage",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00FFFF",
+  "icons": [
+    {
+      "src": "/static/img/ai.png",         // New AI avatar
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/user.png",       // New User avatar
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/android-chrome-192x192.png",  // Old icon
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/img/android-chrome-512x512.png",  // Old icon
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

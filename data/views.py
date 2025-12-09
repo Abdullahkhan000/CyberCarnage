@@ -14,6 +14,9 @@ import google.generativeai as genai
 from django.conf import settings
 from .utils import can_use_ai , get_client_ip
 from datetime import date
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from rest_framework.permissions import AllowAny
 
 class GameView(APIView):
     search_fields = ["game_name","release_date", "series" , "developer" , "publisher"]
@@ -214,13 +217,26 @@ class AboutView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Class ChatAPiView
+# Example helper function
+def can_use_ai(user):
+    today = date.today()
+    if user.last_used != today:
+        user.daily_count = 0
+    return user.daily_count < 4
+
+# Example get_client_ip function
+def get_client_ip(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0]
+    return request.META.get("REMOTE_ADDR")
+
+# ==========================
+# Chat API
+# ==========================
+@method_decorator(csrf_exempt, name='dispatch')
 class ChatAPIView(APIView):
-    """
-    Anonymous Chat API with:
-    - Daily limit 4 messages
-    - IP + Fingerprint tracking
-    - Ban system
-    """
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = ChatRequestSerializer(data=request.data)
         if not serializer.is_valid():
@@ -244,27 +260,34 @@ class ChatAPIView(APIView):
             return Response({"error": "You are banned"}, status=status.HTTP_403_FORBIDDEN)
 
         if not can_use_ai(user):
-            return Response({"error": "Daily limit reached (4 messages)"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+            return Response({"error": "Daily limit reached (4 messages)"},
+                            status=status.HTTP_429_TOO_MANY_REQUESTS)
 
         # Save user message
         ChatMessage.objects.create(user=user, role="user", message=message)
+        today = date.today()
+        if user.last_used != today:
+            user.daily_count = 0
         user.daily_count += 1
-        user.last_used = date.today()
+        user.last_used = today
         user.save()
 
+        # =======================
         # Call Gemini AI
-        genai.configure(api_key=settings.GENAI_API_KEY)
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            generation_config={"max_output_tokens": 2048, "temperature": 0.7}
-        )
+        # =======================
         try:
+            import google.generativeai as genai
+            genai.configure(api_key=settings.GENAI_API_KEY)
+            model = genai.GenerativeModel(
+                model_name="gemini-2.5-flash",
+                generation_config={"max_output_tokens": 2048, "temperature": 0.7}
+            )
             response = model.generate_content(message)
             ai_response = response.text
-        except Exception:
-            ai_response = "AI service temporarily unavailable"
+        except Exception as e:
+            ai_response = f"AI Error: {str(e)}"
 
-        # Save AI message
+        # Save AI response
         ChatMessage.objects.create(user=user, role="ai", message=ai_response)
 
         response_data = ChatResponseSerializer({
@@ -274,18 +297,24 @@ class ChatAPIView(APIView):
 
         return Response(response_data, status=status.HTTP_200_OK)
 
+# ==========================
+# Chat History API
+# ==========================
+@method_decorator(csrf_exempt, name='dispatch')
 class ChatHistoryAPIView(APIView):
     def get(self, request):
         guest_id = request.headers.get("X-GUEST-ID")
-        user = GuestUser.objects.filter(uuid=guest_id).first()
+        if not guest_id:
+            return Response({"messages": []}, status=200)
 
+        user = GuestUser.objects.filter(uuid=guest_id).first()
         if not user:
             return Response({"messages": []}, status=200)
 
         messages = ChatMessage.objects.filter(user=user).order_by("created_at")
-
         serializer = ChatHistorySerializer(messages, many=True)
         return Response({"messages": serializer.data}, status=200)
+
 
 def games_list_view(request):
     games = Games.objects.all()
@@ -298,21 +327,6 @@ def about_list_view(request):
 def gameinfo_list_view(request):
     infos = GameInfo.objects.all()
     return render(request, "data/gameinfo_list.html", {"infos": infos})
-
-# def game_detail_view(request, pk, slug):
-#     about = get_object_or_404(About, pk=pk)
-#
-#     if about.game.slug != slug:
-#         return redirect(
-#             "game_detail",
-#             pk=about.pk,
-#             slug=about.game.slug
-#         )
-#
-#     return render(request, "data/game_detail.html", {
-#         "about": about
-#     })
-
 
 def game_detail_view(request, pk, slug):
     about = get_object_or_404(About.objects.select_related('game'), pk=pk)

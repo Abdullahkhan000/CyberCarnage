@@ -1,8 +1,10 @@
 {% extends 'data/base.html' %}
+{% load static %}
 {% block title %}CyberCarnage AI | ChatGPT Clone{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto mt-6 pb-10 px-4">
+    <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
 
     <h2 class="text-5xl font-display font-black text-center text-transparent bg-clip-text
         bg-gradient-to-r from-pink-500 to-cyan-400 mb-8 glitch-hover">
@@ -20,187 +22,149 @@
     </div>
 
     <div class="mt-6 bg-[#111]/60 border border-white/20 rounded-2xl p-4 relative">
-        <textarea
-            id="message"
-            placeholder="Message CyberCarnage AI..."
-            rows="1"
-            class="w-full bg-transparent text-white resize-none outline-none font-mono"
-        ></textarea>
+        <textarea id="message" placeholder="Message CyberCarnage AI..." rows="1"
+                  class="w-full bg-transparent text-white resize-none outline-none font-mono"></textarea>
 
-        <button id="send-btn"
-            class="absolute right-4 bottom-4 text-cyan-400 hover:text-cyan-200 transition">
+        <!-- Send / Stop button -->
+        <button id="send-btn" class="absolute right-1 bottom-2 text-cyan-400 hover:text-cyan-200 transition text-3xl font-bold">
             ➤
         </button>
     </div>
-
 </div>
 
 <script>
+const AI_AVATAR = "{% static 'img/ai.png' %}";
+const USER_AVATAR = "{% static 'img/user.png' %}";
+
 const chatBox = document.getElementById("chat-history");
 const msgInput = document.getElementById("message");
 const sendBtn = document.getElementById("send-btn");
 const typing = document.getElementById("typing");
 
-let currentTypingInterval = null;
+let guestId;
+try {
+    guestId = localStorage.getItem("guest_id");
+    if (!guestId) { guestId = crypto.randomUUID(); localStorage.setItem("guest_id", guestId); }
+} catch { guestId = crypto.randomUUID(); }
 
-// Generate Guest ID for anonymous user
-let guestId = localStorage.getItem("guest_id");
-if (!guestId) {
-    guestId = crypto.randomUUID();
-    localStorage.setItem("guest_id", guestId);
-}
-
-// Auto-grow textarea
 msgInput.addEventListener("input", () => {
     msgInput.style.height = "auto";
     msgInput.style.height = msgInput.scrollHeight + "px";
 });
 
-// Typewriter effect
-function typeWriter(el, text, speed=14) {
-    let i = 0;
-    return new Promise((resolve) => {
-        currentTypingInterval = setInterval(() => {
-            if(i < text.length){
-                el.innerHTML += text.charAt(i);
-                i++;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } else {
-                clearInterval(currentTypingInterval);
-                currentTypingInterval = null;
-                resolve();
-            }
+// Typewriter
+function typeWriter(el, text, speed=14){
+    let i=0;
+    return new Promise(resolve=>{
+        const interval=setInterval(()=>{
+            if(i<text.length){ el.innerHTML += text.charAt(i++); chatBox.scrollTop = chatBox.scrollHeight; }
+            else{ clearInterval(interval); resolve(); }
         }, speed);
     });
 }
 
-// Add User Message
-function addUserMessage(text) {
-    const div = document.createElement("div");
-    div.className = "flex items-start gap-3 justify-end animate-slide-in";
-    div.innerHTML = `
-        <div class="bg-cyan-400 text-black p-4 rounded-2xl max-w-[75%] shadow-lg font-mono">${text}</div>
-        <img src="/static/img/user.png" class="w-10 h-10 rounded-lg">
-    `;
+// User message
+function addUserMessage(text){
+    const div=document.createElement("div");
+    div.className="flex items-start gap-3 justify-end animate-slide-in";
+    div.innerHTML=`<div class="bg-cyan-400 text-black p-4 rounded-2xl max-w-[75%] shadow-lg font-mono">${text}</div>
+                   <img src="${USER_AVATAR}" class="w-10 h-10 rounded-lg">`;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Add AI Message
-async function addAIMessage(text) {
-    const wrap = document.createElement("div");
-    wrap.className = "flex items-start gap-3 animate-slide-in";
-    wrap.innerHTML = `
-        <img src="/static/img/ai.png" class="w-10 h-10 rounded-lg opacity-70">
-        <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-gray-200 max-w-[80%]">
-            <div class="ai-text"></div>
-            <div class="flex gap-4 mt-2 text-xs">
-                <button class="copy-btn text-cyan-300 underline">Copy</button>
-                <button class="share-btn text-purple-300 underline">Share</button>
-            </div>
-        </div>
-    `;
+// AI message
+async function addAIMessage(text){
+    const wrap=document.createElement("div");
+    wrap.className="flex items-start gap-3 animate-slide-in";
+    wrap.innerHTML=`<img src="${AI_AVATAR}" class="w-10 h-10 rounded-lg opacity-70">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-gray-200 max-w-[80%]">
+                        <div class="ai-text"></div>
+                        <div class="flex gap-4 mt-2 text-xs">
+                            <button class="copy-btn text-cyan-300 underline">Copy</button>
+                            <button class="share-btn text-purple-300 underline">Share</button>
+                        </div>
+                    </div>`;
     chatBox.appendChild(wrap);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    const textDiv = wrap.querySelector(".ai-text");
+    const textDiv=wrap.querySelector(".ai-text");
     await typeWriter(textDiv, text);
 
-    wrap.querySelector(".copy-btn").onclick = () => navigator.clipboard.writeText(text)
-        .then(() => alert("✅ Copied to clipboard!"));
-    wrap.querySelector(".share-btn").onclick = () => navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`)
-        .then(() => alert("🔗 Share text copied!"));
+    wrap.querySelector(".copy-btn").onclick = ()=> navigator.clipboard.writeText(text);
+    wrap.querySelector(".share-btn").onclick = ()=> navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`);
 }
 
-// Send Message
-async function sendMessage() {
-    const msg = msgInput.value.trim();
+// Send message
+let aiTyping = false;
+async function sendMessage(){
+    const msg=msgInput.value.trim();
     if(!msg) return;
 
     addUserMessage(msg);
-    msgInput.value = "";
-    msgInput.style.height = "auto";
+    msgInput.value="";
     typing.classList.remove("hidden");
 
-    sendBtn.innerText = "■";
-    sendBtn.classList.add("text-red-500");
+    // Transform send -> stop
+    sendBtn.innerText = "⏹";  // Stop icon
+    aiTyping = true;
 
     try{
-        const res = await fetch("{% url 'AI_chat' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}",
+        const res=await fetch("{% url 'api_ai_chat' %}", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "X-CSRFToken":"{{ csrf_token }}",
                 "X-GUEST-ID": guestId
             },
-            body: JSON.stringify({message: msg})
+            body: JSON.stringify({message:msg})
         });
-
-        const data = await res.json();
-
-        if(data.error){
-            await addAIMessage(data.error);
-        } else {
-            await addAIMessage(data.response);
-        }
-
-    }catch(error){
-        console.error("❌ Something went wrong!", error);
-        await addAIMessage("❌ AI service unavailable. Try again.");
-    } finally {
+        const data=await res.json();
+        if(!res.ok) await addAIMessage(data.error||`❌ Error ${res.status}`);
+        else await addAIMessage(data.response);
+    }catch(e){ console.error(e); await addAIMessage("❌ Backend unreachable"); }
+    finally{
         typing.classList.add("hidden");
-        sendBtn.innerText = "➤";
-        sendBtn.classList.remove("text-red-500");
+        aiTyping=false;
+        sendBtn.innerText = "➤"; // Back to send
     }
 }
 
-sendBtn.onclick = sendMessage;
-msgInput.addEventListener("keypress", e => {
-    if(e.key==="Enter" && !e.shiftKey){
-        e.preventDefault();
-        sendMessage();
-    }
+// Stop button click while AI types
+sendBtn.onclick = ()=> {
+    if(aiTyping){
+        aiTyping=false;
+        sendBtn.innerText = "➤"; // revert
+        typing.classList.add("hidden");
+    } else sendMessage();
+};
+
+msgInput.addEventListener("keydown", e=>{
+    if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendMessage(); }
 });
 
-// Load history from backend
-async function loadHistory() {
-    try {
-        const res = await fetch("{% url 'chat_history' %}", {
-            method: "GET",
-            headers: {"X-GUEST-ID": guestId}
-        });
-        const data = await res.json();
-
-        if(data.messages.length === 0){
-            // First-time user → show welcome message
-            await addAIMessage("👋 Welcome to CyberCarnage AI! Ask me anything.");
-        } else {
-            // Display messages in order
-            for(const msg of data.messages){
-                if(msg.role === "user") addUserMessage(msg.message);
-                else await addAIMessage(msg.message);
-            }
-        }
-
-        // Scroll to bottom after loading
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-    } catch(e) {
-        console.error("Error loading chat history", e);
-        await addAIMessage("❌ Failed to load chat history.");
-    }
+// Load history
+async function loadHistory(){
+    try{
+        const res=await fetch("{% url 'chat_history' %}", { headers: {"X-GUEST-ID": guestId} });
+        const data=await res.json();
+        if(data.messages.length===0) await addAIMessage("👋 Welcome! Ask me anything.");
+        else for(const msg of data.messages){ msg.role==="user"?addUserMessage(msg.message):await addAIMessage(msg.message); }
+    }catch(e){ await addAIMessage("❌ Failed to load history"); }
 }
 
-window.onload = loadHistory;
+window.onload=loadHistory;
 </script>
 
 <style>
 #chat-history::-webkit-scrollbar { width: 7px; }
 #chat-history::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 4px; }
-.touch-auto { touch-action: pan-y; }
 
-@keyframes slideIn { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideIn { from { opacity:0; transform:translateY(25px); } to { opacity:1; transform:translateY(0); } }
 .animate-slide-in { animation: slideIn .45s ease; }
+
+/* Slightly bigger send/stop button */
+#send-btn { font-size: 2rem; padding: 0.25rem 0.5rem; }
 </style>
 
 {% endblock %}
