@@ -299,14 +299,30 @@ def gameinfo_list_view(request):
     infos = GameInfo.objects.all()
     return render(request, "data/gameinfo_list.html", {"infos": infos})
 
+# def game_detail_view(request, pk, slug):
+#     about = get_object_or_404(About, pk=pk)
+#
+#     if about.game.slug != slug:
+#         return redirect(
+#             "game_detail",
+#             pk=about.pk,
+#             slug=about.game.slug
+#         )
+#
+#     return render(request, "data/game_detail.html", {
+#         "about": about
+#     })
+
+
 def game_detail_view(request, pk, slug):
-    about = get_object_or_404(About, pk=pk)
+    about = get_object_or_404(About.objects.select_related('game'), pk=pk)
 
     if about.game.slug != slug:
         return redirect(
-            "game_detail",
+            'game_detail',
             pk=about.pk,
-            slug=about.game.slug
+            slug=about.game.slug,
+            permanent=True
         )
 
     return render(request, "data/game_detail.html", {
