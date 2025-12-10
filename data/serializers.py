@@ -1,8 +1,7 @@
 from rest_framework import serializers
-from .models import Games , GameInfo , About , ChatMessage , GuestUser
+from .models import Games , GameInfo , About , ChatMessage , GuestUser , GameRating
 from .utils import extract_steam_appid, fetch_rawg_poster
 from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
 
 class GameSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -144,3 +143,23 @@ class ChatMessageSerializer(serializers.Serializer):
 
 class ChatHistorySerializer(serializers.Serializer):
     messages = ChatMessageSerializer(many=True)
+
+class GameRatingSerializer(serializers.Serializer):
+    game_id = serializers.IntegerField()
+    rating = serializers.IntegerField(min_value=1, max_value=5)
+
+    def validate_game_id(self, value):
+        if not Games.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Game does not exist.")
+        return value
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        game = Games.objects.get(id=validated_data['game_id'])
+
+        obj, created = GameRating.objects.update_or_create(
+            user=user,
+            game=game,
+            defaults={'rating': validated_data['rating']}
+        )
+        return obj

@@ -3,7 +3,9 @@
 
 {% block content %}
 <style>
-/* --- Poster animation --- */
+/* =====================
+   EXISTING STYLES
+   ===================== */
 @keyframes dynamicPan {
     0% { transform: scale(1.15) translateX(0); }
     50% { transform: scale(1.1) translateX(-8%); }
@@ -14,7 +16,6 @@
     transform-origin: top left;
 }
 
-/* --- Glitch text effect --- */
 .glitch-hover:hover {
     text-shadow: 1px 0 0 #ff0000, -1px 0 0 #000;
     animation: glitch-anim 0.2s infinite alternate;
@@ -28,7 +29,6 @@
     100% { transform: translate(0); }
 }
 
-/* --- Pulsing neon border --- */
 @keyframes subtleGlow {
     0% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
     50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.5); }
@@ -36,7 +36,6 @@
 }
 .pulsing-card { animation: subtleGlow 4s ease-in-out infinite alternate; }
 
-/* --- Scrollable description & story --- */
 .scrollable {
     max-height: 20rem;
     overflow-y: auto;
@@ -45,6 +44,21 @@
 .scrollable::-webkit-scrollbar { width: 6px; }
 .scrollable::-webkit-scrollbar-thumb { background-color: #00f3ff; border-radius: 3px; }
 .scrollable::-webkit-scrollbar-track { background-color: rgba(0, 0, 0, 0.2); }
+
+/* =====================
+   DISQUS OVERRIDES
+   ===================== */
+#disqus_thread {
+    color-scheme: dark;
+}
+
+#disqus_thread iframe[src*="ads"],
+#disqus_thread iframe[src*="promoted"],
+#disqus_thread .adsbox,
+#disqus_thread .advertisement,
+#disqus_thread .promotion {
+    display: none !important;
+}
 </style>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
@@ -55,17 +69,14 @@
     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black pointer-events-none"></div>
 
     <div class="relative z-10 max-w-4xl mx-auto">
-        <!-- Card -->
+
         <div class="group relative bg-gray-900/70 backdrop-blur-md rounded-2xl border border-gray-700/50 overflow-hidden shadow-lg pulsing-card hover:shadow-[0_0_50px_rgba(168,85,247,0.5)] transition-all duration-500">
 
-            <!-- Poster -->
             <div class="relative h-72 sm:h-96 md:h-[500px] overflow-hidden rounded-t-2xl">
                 <img src="{{ about.poster }}" alt="{{ about.game.game_name }}" class="w-full h-full object-cover poster-move" />
-                <!-- Platform badge -->
                 <span class="absolute top-3 right-3 z-20 bg-black/70 backdrop-blur-sm border border-cyan-500/30 text-cyan-400 text-xs sm:text-sm font-bold uppercase px-2 py-1 rounded-full shadow-lg glitch-hover">
                     {{ about.platform }}
                 </span>
-                <!-- Game name -->
                 <h1 class="absolute bottom-4 left-4 text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-white drop-shadow-[0_0_15px_#bc13fe] glitch-hover font-orbitron">
                     {{ about.game.game_name }}
                 </h1>
@@ -73,7 +84,6 @@
 
             <!-- Content -->
             <div class="p-4 sm:p-8 space-y-6">
-                <!-- Meta Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 border-b border-white/10 pb-4 sm:pb-6 auto-rows-min">
                     <div class="border-l-4 border-purple-500 pl-3">
                         <p class="text-xs text-purple-400 uppercase font-mono">Series</p>
@@ -109,7 +119,6 @@
                     </div>
                 </div>
 
-                <!-- Description -->
                 <div class="scrollable">
                     <h3 class="text-xl sm:text-2xl font-display text-cyan-400 border-b border-cyan-600/40 pb-2 mb-4">
                         DATA LOG: SUMMARY
@@ -119,7 +128,6 @@
                     </p>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="mt-4 sm:mt-6 flex flex-wrap gap-3 sm:gap-4">
                     {% if about.steam_link %}
                     <a href="{{ about.steam_link }}" target="_blank"
@@ -143,6 +151,45 @@
         </div>
     </div>
 </div>
+
+<div class="relative z-10 max-w-4xl mx-auto mt-10 sm:mt-16 px-2 sm:px-0">
+    <div class="bg-gray-900/70 backdrop-blur-md rounded-2xl border border-gray-700/50 shadow-lg p-4 sm:p-6">
+        <h2 class="text-xl sm:text-2xl font-extrabold uppercase tracking-wide text-cyan-400 mb-4 glitch-hover">
+            💬 Community Intel
+        </h2>
+
+        <button id="loadCommentsBtn"
+            class="w-full sm:w-auto px-6 py-2 mb-4 bg-cyan-600 text-black font-bold rounded-lg hover:bg-cyan-500 transition">
+            Load Comments
+        </button>
+
+        <div id="disqus_thread"></div>
+    </div>
+</div>
+
+<script>
+let disqusLoaded = false;
+
+document.getElementById("loadCommentsBtn")?.addEventListener("click", function () {
+    if (disqusLoaded) return;
+    disqusLoaded = true;
+    this.style.display = "none";
+
+    window.disqus_config = function () {
+        this.page.url = "{{ request.build_absolute_uri }}";
+        this.page.identifier = "game-{{ about.game.id }}";
+    };
+
+    var d = document, s = d.createElement("script");
+    s.src = "https://cyber-carnage.disqus.com/embed.js";
+    s.setAttribute("data-timestamp", +new Date());
+    (d.head || d.body).appendChild(s);
+});
+</script>
+
+<noscript>
+Enable JavaScript to view the comments.
+</noscript>
 
 <script>
 module.exports = {

@@ -217,14 +217,12 @@ class AboutView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Class ChatAPiView
-# Example helper function
 def can_use_ai(user):
     today = date.today()
     if user.last_used != today:
         user.daily_count = 0
     return user.daily_count < 4
 
-# Example get_client_ip function
 def get_client_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
@@ -287,7 +285,6 @@ class ChatAPIView(APIView):
         except Exception as e:
             ai_response = f"AI Error: {str(e)}"
 
-        # Save AI response
         ChatMessage.objects.create(user=user, role="ai", message=ai_response)
 
         response_data = ChatResponseSerializer({

@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User
 import uuid
 from django.utils import timezone
 
@@ -87,3 +87,12 @@ class ChatMessage(models.Model):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+class GameRating(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    game = models.ForeignKey('Games', on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField(default=0)  # 1-5 stars
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'game')
