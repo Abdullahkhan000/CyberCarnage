@@ -3,6 +3,10 @@ __pycache__/
 *.sqlite3
 db.sqlite3
 .env
+olddata.json
+olddata_utf8.json
+olddata_utf8v1.json
+data/aiwin.py
 /staticfiles/
 node_modules/
 .DS_Store
