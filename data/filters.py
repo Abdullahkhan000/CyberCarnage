@@ -34,14 +34,18 @@ class InfoFilter(django_filters.FilterSet):
     game_name = django_filters.CharFilter(
         field_name="game__game_name" , lookup_expr="icontains"
     )
-    company = django_filters.CharFilter(
-        field_name="game__company" , lookup_expr="icontains"
+
+    composer = django_filters.CharFilter(
+        field_name="composer" , lookup_expr="icontains"
+    )
+
+    muliplayer = django_filters.BooleanFilter(
+        field_name="multiplayer" , lookup_expr="icontains"
     )
 
     class Meta:
         model = GameInfo
-        fields = ["game", "game_name", "company"]
-
+        fields = ["game", "game_name" , "composer" , "multiplayer"]
 
 
 class AboutFilter(django_filters.FilterSet):
@@ -60,21 +64,26 @@ class AboutFilter(django_filters.FilterSet):
         lookup_expr="icontains"
     )
 
-    company = django_filters.CharFilter(
-        field_name="game__company",
-        lookup_expr="icontains"
-    )
-
     steam_appid = django_filters.CharFilter(
         field_name="steam_appid",
         lookup_expr="exact"
     )
 
-    platforms = django_filters.CharFilter(
+    platform = django_filters.CharFilter(
         field_name="platform",
+        lookup_expr="icontains"
+    )
+
+    developer = django_filters.CharFilter(
+        field_name="game__developer",
+        lookup_expr="icontains"
+    )
+
+    publisher = django_filters.CharFilter(
+        field_name="game__publisher",
         lookup_expr="icontains"
     )
 
     class Meta:
         model = About
-        fields = ["game", "game_name", "series" , "company", "steam_appid" , "platforms"]
+        fields = ["game", "game_name", "series" , "steam_appid" , "platform" , "developer" , "publisher"]

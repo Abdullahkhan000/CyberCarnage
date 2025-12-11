@@ -101,7 +101,7 @@ async function sendMessage(){
     msgInput.value="";
     typing.classList.remove("hidden");
 
-    sendBtn.innerText = "⏹";  // Stop icon
+    sendBtn.innerText = "⏹";
     aiTyping = true;
 
     try{
@@ -121,14 +121,14 @@ async function sendMessage(){
     finally{
         typing.classList.add("hidden");
         aiTyping=false;
-        sendBtn.innerText = "➤"; // Back to send
+        sendBtn.innerText = "➤";
     }
 }
 
 sendBtn.onclick = ()=> {
     if(aiTyping){
         aiTyping=false;
-        sendBtn.innerText = "➤"; // revert
+        sendBtn.innerText = "➤";
         typing.classList.add("hidden");
     } else sendMessage();
 };

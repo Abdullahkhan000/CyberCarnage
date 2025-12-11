@@ -47,6 +47,12 @@ class About(BaseModel):
     def name(self):
         return self.game.game_name
 
+    def publisher(self):
+        return self.game.publisher
+
+    def developer(self):
+        return self.game.developer
+
     def __str__(self):
         return f"About {self.game.game_name}"
 

@@ -8,7 +8,6 @@ class GameSerializer(serializers.Serializer):
     game_name = serializers.CharField(
         max_length=200, help_text="Enter The Name Of The Game"
     )
-    # company = serializers.CharField(help_text="Enter Company Names Of The Game")
     release_date = serializers.DateField()
     series = serializers.CharField(help_text="Enter Series Name Of The Game")
     developer = serializers.CharField()
@@ -17,7 +16,6 @@ class GameSerializer(serializers.Serializer):
     def create(self, validated_data):
         game = Games.objects.create(
             game_name=validated_data.get("game_name"),
-            # company=validated_data.get("company"),
             release_date=validated_data.get("release_date"),
             series=validated_data.get("series"),
             developer=validated_data.get("developer"),
@@ -28,7 +26,6 @@ class GameSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.game_name = validated_data.get("game_name", instance.game_name)
-        # instance.company = validated_data.get("company", instance.company)
         instance.release_date = validated_data.get(
             "release_date", instance.release_date
         )
@@ -42,9 +39,8 @@ class GameSerializer(serializers.Serializer):
 
 class GameInfoSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    game_name = serializers.CharField(source="game.game_name",read_only=True)
-    game_id = serializers.IntegerField(source='game.id', read_only=True)
-    game = serializers.IntegerField(write_only=True)
+    game_name = serializers.CharField(source="game.game_name", read_only=True)
+    game = serializers.IntegerField(write_only=True, source='game_id')
     multiplayer = serializers.BooleanField()
     playable = serializers.BooleanField()
     composer = serializers.CharField()
@@ -71,10 +67,15 @@ class GameInfoSerializer(serializers.Serializer):
 
 class AboutSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    # series from Games — read-only
-    series = serializers.CharField(source='game.series', read_only=True)
     name = serializers.CharField(source='game.game_name', read_only=True)
-    game = serializers.PrimaryKeyRelatedField(queryset=Games.objects.all())
+    # game_id = serializers.PrimaryKeyRelatedField(queryset=Games.objects.all())
+    game_id = serializers.PrimaryKeyRelatedField(
+        queryset=Games.objects.all(),
+        source='game'
+    )
+    developer = serializers.CharField(source='game.developer', read_only=True)
+    publisher = serializers.CharField(source='game.publisher', read_only=True)
+    series = serializers.CharField(source='game.series', read_only=True)
     platform = serializers.CharField(max_length=200)
     steam_link = serializers.URLField(required=False, allow_blank=True, allow_null=True)
     site_link = serializers.URLField(required=False, allow_blank=True)

@@ -40,5 +40,5 @@ def send_new_game_email(instance):
 def notify_game_ready(sender, instance, created, **kwargs):
     if not created:
         return
-
-    send_new_game_email(instance.game)
+    game = Games.objects.get(pk=instance.game.pk)
+    send_new_game_email(game)
