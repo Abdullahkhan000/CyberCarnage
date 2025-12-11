@@ -1,6 +1,6 @@
 {% extends 'data/base.html' %}
 {% load static %}
-{% block title %}CyberCarnage AI | ChatGPT Clone{% endblock %}
+{% block title %}CyberCarnage AI{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto mt-6 pb-10 px-4">
@@ -52,7 +52,7 @@ msgInput.addEventListener("input", () => {
 });
 
 // Typewriter Effect
-function typeWriter(el, text, speed=14){
+function typeWriter(el, text, speed=12){
     let i=0;
     return new Promise(resolve=>{
         const interval=setInterval(()=>{

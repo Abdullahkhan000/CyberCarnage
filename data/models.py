@@ -57,6 +57,10 @@ class GameInfo(BaseModel):
     playable = models.BooleanField(default=True)
     composer = models.CharField(max_length=200, null=True, blank=True)
 
+    @property
+    def name(self):
+        self.game.game_name
+
     def __str__(self):
         return f"Game Info for {self.game.game_name}"
 

@@ -154,11 +154,9 @@
                 </h1>
             </a>
 
-            <!-- DESKTOP NAVbar -->
             <nav class="hidden md:flex items-center space-x-8">
-                <a href="{% url 'home' %}" class="text-gray-300 hover:text-white glitch-hover">GAMES</a>
                 <a href="{% url 'about_list' %}" class="text-gray-300 hover:text-white glitch-hover">ABOUT</a>
-                <a href="{% url 'gameinfo_list' %}" class="text-gray-300 hover:text-white glitch-hover">GAME LIST</a>
+                <a href="{% url 'in_game_info' %}" class="text-gray-300 hover:text-white glitch-hover">IN-GAME INFO</a>
             </nav>
 
             <button class="md:hidden text-white focus:outline-none glitch-hover" onclick="toggleMenu()">
@@ -170,9 +168,8 @@
         </div>
 
         <div id="mobileNav" class="md:hidden hidden flex flex-col bg-black/90 border-t border-gray-700">
-            <a href="{% url 'home' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">GAMES</a>
             <a href="{% url 'about_list' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">ABOUT</a>
-            <a href="{% url 'gameinfo_list' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">GAME LIST</a>
+            <a href="{% url 'in_game_info' %}" class="px-4 py-3 text-gray-300 hover:text-white border-b border-gray-700">IN-GAME INFO</a>
         </div>
     </header>
 

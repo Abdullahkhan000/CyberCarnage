@@ -3,20 +3,21 @@ from .models import Games , About , GameInfo , Subscriber , ChatMessage , GuestU
 from rest_framework import status
 from .serializers import (GameSerializer , GameInfoSerializer , AboutSerializer , ChatResponseSerializer
 , ChatRequestSerializer , ChatHistorySerializer)
-from .filters import GameFilter , AboutFilter
+from .filters import (GameFilter , AboutFilter , InfoFilter)
 from rest_framework.response import Response
-from rest_framework.filters import SearchFilter , OrderingFilter
+from rest_framework.filters import (SearchFilter
+, OrderingFilter)
 from django.shortcuts import render, get_object_or_404
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-import google.generativeai as genai
 from django.conf import settings
 from .utils import can_use_ai , get_client_ip
 from datetime import date
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
+from rest_framework.pagination import PageNumberPagination
 
 class GameView(APIView):
     search_fields = ["game_name","release_date", "series" , "developer" , "publisher"]
@@ -59,9 +60,12 @@ class GameView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        return Response(
-            GameSerializer(queryset, many=True).data, status=status.HTTP_200_OK
-        )
+            # ---------------- Pagination ----------------
+        paginator = PageNumberPagination()
+        paginator.page_size = 5
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = GameSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self,request,pk=None):
         if pk is not None:
@@ -149,10 +153,17 @@ class AboutView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        return Response(
-            AboutSerializer(queryset, many=True).data,
-            status=status.HTTP_200_OK
-        )
+        # return Response(
+        #     AboutSerializer(queryset, many=True).data,
+        #     status=status.HTTP_200_OK
+        # )
+
+            # ---------------- Pagination ----------------
+        paginator = PageNumberPagination()
+        paginator.page_size = 4
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = AboutSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
     # ---------------- POST ----------------
     def post(self, request, pk=None):
@@ -213,6 +224,110 @@ class AboutView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# GameInfo Views
+
+class GameInfoView(APIView):
+    search_fields = ["game", "composer"]
+    ordering_fields = ["multiplayer", "playable"]
+
+    def get__object(self,pk=None):
+        try:
+            return GameInfo.objects.get(pk=pk)
+        except GameInfo.DoesNotExist:
+            return None
+
+    def get(self,request,pk=None):
+        if pk:
+            obj = self.get__object(pk=pk)
+            if not obj:
+                return Response({"error":"Object Not Found"},status=status.HTTP_404_NOT_FOUND)
+            serializer = GameInfoSerializer(obj)
+            return Response(serializer.data)
+
+        queryset = GameInfo.objects.all()
+        filterset = InfoFilter(request.GET,queryset=queryset)
+
+        if not filterset.is_valid():
+            return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = filterset.qs
+
+        search_filter = SearchFilter()
+        queryset = search_filter.filter_queryset(request,queryset,self)
+
+        order_filter = OrderingFilter()
+        queryset = order_filter.filter_queryset(request,queryset,self)
+
+        if not queryset.exists():
+            return Response(
+                {"success": False, "message": "No results found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        # -------PAGINATION-------
+        paginator = PageNumberPagination()
+        paginator.page_size = 4
+        result_page = paginator.paginate_queryset(queryset,request)
+        serializer = GameInfoSerializer(result_page,many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+    def post(self,request,pk=None):
+        if pk is not None:
+            return Response({"error":"POST cannot use while Primary Key"},status=status.HTTP_401_UNAUTHORIZED)
+        serializer = GameInfoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self,request,pk=None):
+        if pk is None:
+            return Response(
+                {"error": "PATCH requires a primary key"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        obj = self.get__object(pk)
+        if not obj:
+            return Response(
+                {"success": False, "message": "No record found with this ID"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = GameInfoSerializer(obj, data=request.data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Data patched successfully"},
+                status=status.HTTP_202_ACCEPTED,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self,request,pk=None):
+        if pk is None:
+            return Response(
+                {"error": "PATCH requires a primary key"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        obj = self.get__object(pk)
+        if not obj:
+            return Response(
+                {"success": False, "message": "No record found with this ID"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = GameInfoSerializer(obj, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Data patched successfully"},
+                status=status.HTTP_202_ACCEPTED,
+            )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -321,9 +436,9 @@ def about_list_view(request):
     abouts = About.objects.all()
     return render(request, "data/about_list.html", {"abouts": abouts})
 
-def gameinfo_list_view(request):
+def in_game_info_list_view(request):
     infos = GameInfo.objects.all()
-    return render(request, "data/gameinfo_list.html", {"infos": infos})
+    return render(request, "data/in-game info.html", {"infos": infos})
 
 def game_detail_view(request, pk, slug):
     about = get_object_or_404(About.objects.select_related('game'), pk=pk)

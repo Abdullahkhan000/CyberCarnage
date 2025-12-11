@@ -41,6 +41,9 @@ class GameSerializer(serializers.Serializer):
         return instance
 
 class GameInfoSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    game_name = serializers.CharField(source="game.game_name",read_only=True)
+    game_id = serializers.IntegerField(source='game.id', read_only=True)
     game = serializers.IntegerField(write_only=True)
     multiplayer = serializers.BooleanField()
     playable = serializers.BooleanField()
