@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class SignupForm(UserCreationForm):
     email = forms.EmailField(required=True)
     display_name = forms.CharField(required=False)

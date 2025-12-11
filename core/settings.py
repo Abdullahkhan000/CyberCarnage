@@ -28,7 +28,6 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "cybercarnage.onrender.com",
     "www.cybercarnage.com",
-
     # Vercel domains
     "cyber-carnage.vercel.app",
     "cyber-carnage-7fad0cfna.vercel.app",
@@ -48,7 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-OTHER_INSTALLED_APPS = ["rest_framework","data","crispy_forms","widget_tweaks"]
+OTHER_INSTALLED_APPS = ["rest_framework", "data", "crispy_forms", "widget_tweaks"]
 
 INSTALLED_APPS += OTHER_INSTALLED_APPS
 
@@ -138,9 +137,9 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-GENAI_API_KEY = config('AI_API_KEY')
+GENAI_API_KEY = config("AI_API_KEY")
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [

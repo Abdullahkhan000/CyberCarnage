@@ -5,6 +5,7 @@ from django.conf import settings
 from data.models import Games, Subscriber, About
 from django.template.loader import render_to_string
 
+
 def send_new_game_email(instance):
     subject = f"⚡ NEW GAME DROP: {instance.game_name}!"
 
@@ -12,10 +13,7 @@ def send_new_game_email(instance):
     if not subscribers:
         return
 
-    html_content = render_to_string(
-        "emails/new_game_email.html",
-        {"game": instance}
-    )
+    html_content = render_to_string("emails/new_game_email.html", {"game": instance})
 
     text_content = f"""
     New Game Alert: {instance.game_name}
@@ -35,6 +33,7 @@ def send_new_game_email(instance):
     )
     email.attach_alternative(html_content, "text/html")
     email.send(fail_silently=False)
+
 
 @receiver(post_save, sender=About)
 def notify_game_ready(sender, instance, created, **kwargs):

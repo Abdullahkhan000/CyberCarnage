@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 import uuid
 from django.utils import timezone
 
+
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -91,6 +92,7 @@ class GuestUser(models.Model):
     def __str__(self):
         return str(self.uuid)
 
+
 class ChatMessage(models.Model):
     ROLE_CHOICES = [("user", "User"), ("ai", "AI")]
     user = models.ForeignKey(GuestUser, on_delete=models.CASCADE)
@@ -98,11 +100,12 @@ class ChatMessage(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+
 class GameRating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    game = models.ForeignKey('Games', on_delete=models.CASCADE)
+    game = models.ForeignKey("Games", on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(default=0)  # 1-5 stars
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('user', 'game')
+        unique_together = ("user", "game")

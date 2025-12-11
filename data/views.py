@@ -1,26 +1,32 @@
 from rest_framework.views import APIView
-from .models import Games , About , GameInfo , Subscriber , ChatMessage , GuestUser
+from .models import Games, About, GameInfo, Subscriber, ChatMessage, GuestUser
 from rest_framework import status
-from .serializers import (GameSerializer , GameInfoSerializer , AboutSerializer , ChatResponseSerializer
-, ChatRequestSerializer , ChatHistorySerializer)
-from .filters import (GameFilter , AboutFilter , InfoFilter)
+from .serializers import (
+    GameSerializer,
+    GameInfoSerializer,
+    AboutSerializer,
+    ChatResponseSerializer,
+    ChatRequestSerializer,
+    ChatHistorySerializer,
+)
+from .filters import GameFilter, AboutFilter, InfoFilter
 from rest_framework.response import Response
-from rest_framework.filters import (SearchFilter
-, OrderingFilter)
+from rest_framework.filters import SearchFilter, OrderingFilter
 from django.shortcuts import render, get_object_or_404
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.conf import settings
-from .utils import can_use_ai , get_client_ip
+from .utils import can_use_ai, get_client_ip
 from datetime import date
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
 from rest_framework.pagination import PageNumberPagination
 
+
 class GameView(APIView):
-    search_fields = ["game_name","release_date", "series" , "developer" , "publisher"]
+    search_fields = ["game_name", "release_date", "series", "developer", "publisher"]
     ordering_fields = ["release_date"]
 
     def get_object(self, pk=None):
@@ -49,7 +55,7 @@ class GameView(APIView):
         queryset = filterset.qs
 
         search_filter = SearchFilter()
-        queryset = search_filter.filter_queryset(request,queryset,self)
+        queryset = search_filter.filter_queryset(request, queryset, self)
 
         ordering_filter = OrderingFilter()
         queryset = ordering_filter.filter_queryset(request, queryset, self)
@@ -67,16 +73,19 @@ class GameView(APIView):
         serializer = GameSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-    def post(self,request,pk=None):
+    def post(self, request, pk=None):
         if pk is not None:
-            return Response({"error":"POST Cannot Work With Primary Key"},status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "POST Cannot Work With Primary Key"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         serializer = GameSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self,request,pk=None):
+    def patch(self, request, pk=None):
         if pk is None:
             return Response(
                 {"error": "PATCH requires a primary key"},
@@ -86,29 +95,35 @@ class GameView(APIView):
         if not obj:
             return Response(
                 {"success": False, "message": "No record found with this ID"},
-                status=status.HTTP_404_NOT_FOUND,)
-        serializer = GameSerializer(obj,data=request.data,partial=True)
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = GameSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "Data Patched successfully"},status=status.HTTP_202_ACCEPTED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"message": "Data Patched successfully"},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self,request,pk=None):
+    def put(self, request, pk=None):
         if pk is None:
-            return Response({"error":"PUT requires the Primary Key"},
-                            status=status.HTTP_401_UNAUTHORIZED
+            return Response(
+                {"error": "PUT requires the Primary Key"},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         obj = self.get_object(pk=pk)
         if not obj:
-            return Response({"error":"Object Data Not Found"},
-                            status=status.HTTP_404_NOT_FOUND
+            return Response(
+                {"error": "Object Data Not Found"}, status=status.HTTP_404_NOT_FOUND
             )
-        serializer = GameInfoSerializer(obj,data=request.data)
+        serializer = GameInfoSerializer(obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AboutView(APIView):
     search_fields = ["summary", "steam_appid", "game__game_name"]
@@ -158,7 +173,7 @@ class AboutView(APIView):
         #     status=status.HTTP_200_OK
         # )
 
-            # ---------------- Pagination ----------------
+        # ---------------- Pagination ----------------
         paginator = PageNumberPagination()
         paginator.page_size = 4
         result_page = paginator.paginate_queryset(queryset, request)
@@ -227,28 +242,32 @@ class AboutView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # GameInfo Views
+
 
 class GameInfoView(APIView):
     search_fields = ["game", "composer"]
     ordering_fields = ["multiplayer", "playable"]
 
-    def get__object(self,pk=None):
+    def get__object(self, pk=None):
         try:
             return GameInfo.objects.get(pk=pk)
         except GameInfo.DoesNotExist:
             return None
 
-    def get(self,request,pk=None):
+    def get(self, request, pk=None):
         if pk:
             obj = self.get__object(pk=pk)
             if not obj:
-                return Response({"error":"Object Not Found"},status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"error": "Object Not Found"}, status=status.HTTP_404_NOT_FOUND
+                )
             serializer = GameInfoSerializer(obj)
             return Response(serializer.data)
 
         queryset = GameInfo.objects.all()
-        filterset = InfoFilter(request.GET,queryset=queryset)
+        filterset = InfoFilter(request.GET, queryset=queryset)
 
         if not filterset.is_valid():
             return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -256,10 +275,10 @@ class GameInfoView(APIView):
         queryset = filterset.qs
 
         search_filter = SearchFilter()
-        queryset = search_filter.filter_queryset(request,queryset,self)
+        queryset = search_filter.filter_queryset(request, queryset, self)
 
         order_filter = OrderingFilter()
-        queryset = order_filter.filter_queryset(request,queryset,self)
+        queryset = order_filter.filter_queryset(request, queryset, self)
 
         if not queryset.exists():
             return Response(
@@ -269,13 +288,16 @@ class GameInfoView(APIView):
         # -------PAGINATION-------
         paginator = PageNumberPagination()
         paginator.page_size = 4
-        result_page = paginator.paginate_queryset(queryset,request)
-        serializer = GameInfoSerializer(result_page,many=True)
+        result_page = paginator.paginate_queryset(queryset, request)
+        serializer = GameInfoSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-    def post(self,request,pk=None):
+    def post(self, request, pk=None):
         if pk is not None:
-            return Response({"error":"POST cannot use while Primary Key"},status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "POST cannot use while Primary Key"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         serializer = GameInfoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -283,7 +305,7 @@ class GameInfoView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self,request,pk=None):
+    def patch(self, request, pk=None):
         if pk is None:
             return Response(
                 {"error": "PATCH requires a primary key"},
@@ -297,7 +319,7 @@ class GameInfoView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = GameInfoSerializer(obj, data=request.data,partial=True)
+        serializer = GameInfoSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(
@@ -307,7 +329,7 @@ class GameInfoView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self,request,pk=None):
+    def put(self, request, pk=None):
         if pk is None:
             return Response(
                 {"error": "PATCH requires a primary key"},
@@ -331,6 +353,7 @@ class GameInfoView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # Class ChatAPiView
 def can_use_ai(user):
     today = date.today()
@@ -338,18 +361,21 @@ def can_use_ai(user):
         user.daily_count = 0
     return user.daily_count < 4
 
+
 def get_client_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
         return x_forwarded_for.split(",")[0]
     return request.META.get("REMOTE_ADDR")
 
+
 # ==========================
 # Chat API
 # ==========================
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class ChatAPIView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         serializer = ChatRequestSerializer(data=request.data)
         if not serializer.is_valid():
@@ -370,11 +396,15 @@ class ChatAPIView(APIView):
             user.save()
 
         if user.is_banned:
-            return Response({"error": "You are banned"}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "You are banned"}, status=status.HTTP_403_FORBIDDEN
+            )
 
         if not can_use_ai(user):
-            return Response({"error": "Daily limit reached (4 messages)"},
-                            status=status.HTTP_429_TOO_MANY_REQUESTS)
+            return Response(
+                {"error": "Daily limit reached (4 messages)"},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
 
         # Save user message
         ChatMessage.objects.create(user=user, role="user", message=message)
@@ -390,10 +420,11 @@ class ChatAPIView(APIView):
         # =======================
         try:
             import google.generativeai as genai
+
             genai.configure(api_key=settings.GENAI_API_KEY)
             model = genai.GenerativeModel(
                 model_name="gemini-2.5-flash",
-                generation_config={"max_output_tokens": 2048, "temperature": 0.7}
+                generation_config={"max_output_tokens": 2048, "temperature": 0.7},
             )
             response = model.generate_content(message)
             ai_response = response.text
@@ -402,17 +433,17 @@ class ChatAPIView(APIView):
 
         ChatMessage.objects.create(user=user, role="ai", message=ai_response)
 
-        response_data = ChatResponseSerializer({
-            "response": ai_response,
-            "remaining": 4 - user.daily_count
-        }).data
+        response_data = ChatResponseSerializer(
+            {"response": ai_response, "remaining": 4 - user.daily_count}
+        ).data
 
         return Response(response_data, status=status.HTTP_200_OK)
+
 
 # ==========================
 # Chat History API
 # ==========================
-@method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name="dispatch")
 class ChatHistoryAPIView(APIView):
     def get(self, request):
         guest_id = request.headers.get("X-GUEST-ID")
@@ -432,37 +463,39 @@ def games_list_view(request):
     games = Games.objects.all()
     return render(request, "data/home.html", {"games": games})
 
+
 def about_list_view(request):
     abouts = About.objects.all()
     return render(request, "data/about_list.html", {"abouts": abouts})
+
 
 def in_game_info_list_view(request):
     infos = GameInfo.objects.all()
     return render(request, "data/in-game info.html", {"infos": infos})
 
+
 def game_detail_view(request, pk, slug):
-    about = get_object_or_404(About.objects.select_related('game'), pk=pk)
+    about = get_object_or_404(About.objects.select_related("game"), pk=pk)
 
     if about.game.slug != slug:
         return redirect(
-            'game_detail',
-            pk=about.pk,
-            slug=about.game.slug,
-            permanent=True
+            "game_detail", pk=about.pk, slug=about.game.slug, permanent=True
         )
 
-    return render(request, "data/game_detail.html", {
-        "about": about
-    })
+    return render(request, "data/game_detail.html", {"about": about})
+
 
 def privacy_page(request):
     return render(request, "data/privacy.html")
 
+
 def terms_page(request):
     return render(request, "data/terms.html")
 
+
 def faq_page(request):
     return render(request, "data/faq.html")
+
 
 def send_contact(request):
     if request.method == "POST":
@@ -509,5 +542,6 @@ def subscribe_newsletter(request):
             return JsonResponse({"status": "exists"})
     return JsonResponse({"status": "error"})
 
+
 def gemini_chat_view(request):
-    return render(request, 'data/gemini_chat.html')
+    return render(request, "data/gemini_chat.html")

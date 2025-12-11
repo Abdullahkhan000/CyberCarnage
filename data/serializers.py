@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import Games , GameInfo , About , ChatMessage , GuestUser , GameRating
+from .models import Games, GameInfo, About, ChatMessage, GuestUser, GameRating
 from .utils import extract_steam_appid, fetch_rawg_poster
 from django.contrib.auth import get_user_model
+
 
 class GameSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -20,7 +21,6 @@ class GameSerializer(serializers.Serializer):
             series=validated_data.get("series"),
             developer=validated_data.get("developer"),
             publisher=validated_data.get("publisher"),
-
         )
         return game
 
@@ -33,14 +33,14 @@ class GameSerializer(serializers.Serializer):
         instance.developer = validated_data.get("developer", instance.developer)
         instance.publisher = validated_data.get("publisher", instance.publisher)
 
-
         instance.save()
         return instance
+
 
 class GameInfoSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     game_name = serializers.CharField(source="game.game_name", read_only=True)
-    game = serializers.IntegerField(write_only=True, source='game_id')
+    game = serializers.IntegerField(write_only=True, source="game_id")
     multiplayer = serializers.BooleanField()
     playable = serializers.BooleanField()
     composer = serializers.CharField()
@@ -49,10 +49,7 @@ class GameInfoSerializer(serializers.Serializer):
         game_id = validated_data.pop("game")
         game = Games.objects.get(id=game_id)
 
-        return GameInfo.objects.create(
-            game=game,
-            **validated_data
-        )
+        return GameInfo.objects.create(game=game, **validated_data)
 
     def update(self, instance, validated_data):
         validated_data.pop("game", None)
@@ -67,15 +64,14 @@ class GameInfoSerializer(serializers.Serializer):
 
 class AboutSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(source='game.game_name', read_only=True)
+    name = serializers.CharField(source="game.game_name", read_only=True)
     # game_id = serializers.PrimaryKeyRelatedField(queryset=Games.objects.all())
     game_id = serializers.PrimaryKeyRelatedField(
-        queryset=Games.objects.all(),
-        source='game'
+        queryset=Games.objects.all(), source="game"
     )
-    developer = serializers.CharField(source='game.developer', read_only=True)
-    publisher = serializers.CharField(source='game.publisher', read_only=True)
-    series = serializers.CharField(source='game.series', read_only=True)
+    developer = serializers.CharField(source="game.developer", read_only=True)
+    publisher = serializers.CharField(source="game.publisher", read_only=True)
+    series = serializers.CharField(source="game.series", read_only=True)
     platform = serializers.CharField(max_length=200)
     steam_link = serializers.URLField(required=False, allow_blank=True, allow_null=True)
     site_link = serializers.URLField(required=False, allow_blank=True)
@@ -102,15 +98,14 @@ class AboutSerializer(serializers.Serializer):
         instance.steam_link = validated_data.get("steam_link", instance.steam_link)
         instance.site_link = validated_data.get("site_link", instance.site_link)
         instance.genre = validated_data.get("genre", instance.genre)
-        instance.story = validated_data.get("story" ,instance.story)
+        instance.story = validated_data.get("story", instance.story)
 
         if "steam_link" in validated_data:
             instance.steam_appid = extract_steam_appid(instance.steam_link)
 
         if not instance.poster:
             instance.poster = fetch_rawg_poster(
-                instance.game.game_name,
-                getattr(instance.game, "slug", None)
+                instance.game.game_name, getattr(instance.game, "slug", None)
             )
 
         instance.save()
@@ -119,16 +114,17 @@ class AboutSerializer(serializers.Serializer):
 
 User = get_user_model()
 
+
 class ChatRequestSerializer(serializers.Serializer):
     message = serializers.CharField(
-        max_length=5000,
-        allow_blank=False,
-        trim_whitespace=True
+        max_length=5000, allow_blank=False, trim_whitespace=True
     )
+
 
 class ChatResponseSerializer(serializers.Serializer):
     response = serializers.CharField()
     remaining = serializers.IntegerField()
+
 
 class GuestUserSerializer(serializers.Serializer):
     uuid = serializers.CharField(read_only=True)
@@ -139,14 +135,17 @@ class GuestUserSerializer(serializers.Serializer):
     fingerprint = serializers.CharField(read_only=True)
     is_banned = serializers.BooleanField(read_only=True)
 
+
 class ChatMessageSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     role = serializers.CharField(read_only=True)
     message = serializers.CharField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
 
+
 class ChatHistorySerializer(serializers.Serializer):
     messages = ChatMessageSerializer(many=True)
+
 
 class GameRatingSerializer(serializers.Serializer):
     game_id = serializers.IntegerField()
@@ -158,12 +157,10 @@ class GameRatingSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        game = Games.objects.get(id=validated_data['game_id'])
+        user = self.context["request"].user
+        game = Games.objects.get(id=validated_data["game_id"])
 
         obj, created = GameRating.objects.update_or_create(
-            user=user,
-            game=game,
-            defaults={'rating': validated_data['rating']}
+            user=user, game=game, defaults={"rating": validated_data["rating"]}
         )
         return obj

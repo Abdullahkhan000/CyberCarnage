@@ -2,13 +2,14 @@ import re
 import requests
 from datetime import date
 
+
 def extract_steam_appid(url):
-    match = re.search(r'/app/(\d+)', url)
+    match = re.search(r"/app/(\d+)", url)
     return int(match.group(1)) if match else None
 
 
-
 RAWG_KEY = "63cf2eb2f87f495eacda5cb4bb5398fd"
+
 
 def fetch_rawg_poster(game_name, slug=None):
     try:
@@ -28,7 +29,6 @@ def fetch_rawg_poster(game_name, slug=None):
         return None
 
 
-
 def can_use_ai(user, daily_limit=4):
     today = date.today()
     if user.last_used != today:
@@ -37,6 +37,7 @@ def can_use_ai(user, daily_limit=4):
         user.save()
 
     return user.daily_count < daily_limit
+
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
