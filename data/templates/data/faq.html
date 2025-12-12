@@ -2,99 +2,181 @@
 {% block title %}FAQ — CyberCarnage{% endblock %}
 
 {% block content %}
-<div class="space-y-10">
+<div class="space-y-12 max-w-4xl mx-auto">
 
-    <h1 class="text-4xl font-semibold text-cyan-400 tracking-wide">FAQ</h1>
-    <p class="text-gray-400 text-base max-w-2xl">Frequently asked curiosities, decoded with a hint of digital glow.</p>
+    <div class="text-center">
+        <h1 class="text-4xl font-extrabold text-cyan-400 tracking-wide mb-2">FAQ</h1>
+        <p class="text-gray-400 text-base max-w-2xl mx-auto">
+            Learn about CyberCarnage, our AI assistant, and the Disqus comment system. Tips for gaming enthusiasts included.
+        </p>
+    </div>
 
+    <div class="bg-black/50 border border-cyan-400/30 rounded-xl p-4 space-y-2 font-mono text-gray-200 shadow-lg">
+        <p><strong>CyberCarnage AI:</strong> Daily limit of 4 messages per guest. Messages logged temporarily for session management.</p>
+        <p><strong>Disqus Comments:</strong> Collects username, email, and IP. Users can manage or delete data via Disqus.</p>
+        <p><strong>Privacy:</strong> No personal game-related data collected unless submitted via contact forms.</p>
+    </div>
 
-    <div class="space-y-4">
+    <div class="space-y-4 mt-6">
 
-        <div class="cyber-border rounded-xl p-5 bg-neutral-900/60">
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
             <details class="group">
-                <summary class="flex justify-between items-center cursor-pointer text-lg font-medium text-gray-200 group-open:text-cyan-400">
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
                     What is CyberCarnage?
                     <span class="transition-transform group-open:rotate-90">›</span>
                 </summary>
-                <p class="mt-4 text-gray-400 leading-relaxed">
-                    CyberCarnage is a curated digital vault — a clean, fast, game-focused database built for players who like their information sharp and their UI sharper.
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    CyberCarnage is a curated digital vault — a fast, game-focused database built for players who want sharp information and a sleek gaming UI. It integrates CyberCarnage AI for interactive assistance and Disqus for community discussion. The platform prioritizes usability, clarity, and minimal distractions.
                 </p>
             </details>
         </div>
 
-        <div class="cyber-border rounded-xl p-5 bg-neutral-900/60">
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
             <details class="group">
-                <summary class="flex justify-between items-center cursor-pointer text-lg font-medium text-gray-200 group-open:text-cyan-400">
-                    What type of data do you store?
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    How does CyberCarnage AI work?
                     <span class="transition-transform group-open:rotate-90">›</span>
                 </summary>
-                <p class="mt-4 text-gray-400 leading-relaxed">
-                    Only game-related content: titles, platforms, genres, release info, images, and other public details. No personal user data is collected or required to explore the site.
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    AI responds to user queries with up to 4 messages per day. All interactions are temporarily logged for session management, performance improvement, and debugging. Users are advised not to share personal or sensitive information. AI is optimized for gaming-related topics such as game titles, platforms, genres, and release information.
                 </p>
             </details>
         </div>
 
-        <div class="cyber-border rounded-xl p-5 bg-neutral-900/60">
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
             <details class="group">
-                <summary class="flex justify-between items-center cursor-pointer text-lg font-medium text-gray-200 group-open:text-cyan-400">
-                    Can I request a game to be added?
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    How do Disqus comments work?
                     <span class="transition-transform group-open:rotate-90">›</span>
                 </summary>
-                <p class="mt-4 text-gray-400 leading-relaxed">
-                    Yes. If a title feels missing from the grid, you can request it — and it’ll be added to the vault once verified.
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    Disqus collects usernames, email addresses, and IPs to enable commenting. Users retain ownership of their comments and can manage or delete their data directly through the Disqus platform. CyberCarnage does not store Disqus comments permanently on its servers.
                 </p>
             </details>
         </div>
 
-        <div class="cyber-border rounded-xl p-5 bg-neutral-900/60">
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
             <details class="group">
-                <summary class="flex justify-between items-center cursor-pointer text-lg font-medium text-gray-200 group-open:text-cyan-400">
-                    Can I request data updates or corrections?
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    Can I request a new game to be added?
                     <span class="transition-transform group-open:rotate-90">›</span>
                 </summary>
-                <p class="mt-4 text-gray-400 leading-relaxed">
-                    Absolutely. If something looks outdated, inaccurate, or incomplete, you can request a fix and it’ll be updated swiftly.
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    Yes. Submit missing titles through the provided request form. All requests are verified to ensure accuracy before being added to the database. This keeps the platform reliable and up-to-date for all users.
                 </p>
             </details>
         </div>
 
-        <div class="cyber-border rounded-xl p-5 bg-neutral-900/60">
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
             <details class="group">
-                <summary class="flex justify-between items-center cursor-pointer text-lg font-medium text-gray-200 group-open:text-cyan-400">
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    Can I request updates or corrections to existing games?
+                    <span class="transition-transform group-open:rotate-90">›</span>
+                </summary>
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    Absolutely. If you notice outdated or incorrect information, you can report it and verified updates will be implemented promptly to maintain database accuracy.
+                </p>
+            </details>
+        </div>
+
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
+            <details class="group">
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
                     Is CyberCarnage mobile-friendly?
                     <span class="transition-transform group-open:rotate-90">›</span>
                 </summary>
-                <p class="mt-4 text-gray-400 leading-relaxed">
-                    Entirely. Every card, cover, and stat panel adapts smoothly across all screen sizes — from handhelds to ultrawides.
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    Fully responsive. Every card, cover, and stats panel adapts across devices — from mobile phones to desktops and ultrawide monitors — ensuring readability and smooth navigation.
                 </p>
             </details>
         </div>
 
-        <div class="cyber-border rounded-xl p-5 bg-neutral-900/60">
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
             <details class="group">
-                <summary class="flex justify-between items-center cursor-pointer text-lg font-medium text-gray-200 group-open:text-cyan-400">
-                    Who maintains CyberCarnage?
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    Is there a rating or review system?
                     <span class="transition-transform group-open:rotate-90">›</span>
                 </summary>
-                <p class="mt-4 text-gray-400 leading-relaxed">
-                    A single creator runs the code, the content, and the curation — keeping everything fast, functional, and honest.
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    CyberCarnage provides quick-glance stats and community impressions, helping users make informed decisions without information overload. Ratings are summarized to enhance clarity.
                 </p>
             </details>
         </div>
 
-        <div class="cyber-border rounded-xl p-5 bg-neutral-900/60">
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
             <details class="group">
-                <summary class="flex justify-between items-center cursor-pointer text-lg font-medium text-gray-200 group-open:text-cyan-400">
-                    Is there any rating or review system?
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    What should I do if AI is not responding?
                     <span class="transition-transform group-open:rotate-90">›</span>
                 </summary>
-                <p class="mt-4 text-gray-400 leading-relaxed">
-                    Yes — CyberCarnage provides quick-glance stats, community impressions, and essential info so you can make fast decisions without drowning in noise.
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    Check your internet connection and daily message limit. If issues persist, reload the page. Temporary server interruptions can also cause delays, but your session and history remain intact.
                 </p>
+            </details>
+        </div>
+
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
+            <details class="group">
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    How is my privacy protected?
+                    <span class="transition-transform group-open:rotate-90">›</span>
+                </summary>
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    No personal information is required to explore games. CyberCarnage AI logs messages temporarily for functionality only. Disqus data is managed by Disqus under their privacy policies. We do not sell or share personal user data beyond necessary security or analytics purposes.
+                </p>
+            </details>
+        </div>
+
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all">
+            <details class="group">
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    Who do I contact for further help?
+                    <span class="transition-transform group-open:rotate-90">›</span>
+                </summary>
+                <p class="mt-3 text-gray-300 leading-relaxed">
+                    For queries about CyberCarnage, AI usage, or Disqus comments, use the Contact page. Messages are forwarded securely to ensure prompt assistance.
+                </p>
+            </details>
+        </div>
+
+        <div class="cyber-border rounded-xl p-5 bg-neutral-900/70 border-cyan-500/30 hover:border-cyan-400 transition-all mt-6">
+            <details class="group">
+                <summary class="flex justify-between items-center cursor-pointer text-lg font-semibold text-gray-200 group-open:text-cyan-400">
+                    Who built CyberCarnage?
+                    <span class="transition-transform group-open:rotate-90">›</span>
+                </summary>
+                <div class="mt-3 space-y-2">
+                    <p class="text-gray-300 leading-relaxed font-sans text-lg">
+                        <strong>Code2Encoder</strong> is the creator of <strong>CyberCarnage</strong>, handling frontend, backend, and AI integration for a smooth gaming experience.
+                    </p>
+
+                    <p class="text-gray-300 leading-relaxed font-sans text-lg">
+                        Real Name: <strong>Hafiz Muhammad Abdullah Ibrahim</strong> | Role: Junior Developer | Python, Django & DRF | Developing expertise in C, Java, HTML & JavaScript | Video Encoding & Digital Media Specialist
+                    </p>
+
+                    <p class="text-gray-300 leading-relaxed font-sans text-lg">
+                        Passionate about tech and media, <strong>Code2Encoder</strong> ensures CyberCarnage runs flawlessly and you can contact him for queries.
+                    </p>
+                </div>
             </details>
         </div>
 
     </div>
-
 </div>
+
+<style>
+.cyber-border {
+    border-width: 1px;
+    border-color: rgba(0, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+details[open] summary::after {
+    content: "▲";
+    float: right;
+}
+summary {
+    list-style: none;
+}
+</style>
+
 {% endblock %}

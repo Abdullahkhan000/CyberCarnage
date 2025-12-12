@@ -2,16 +2,13 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
-from data.models import Games, Subscriber, About
 from django.template.loader import render_to_string
+from data.models import Games, Subscriber, About
 
 
-def send_new_game_email(game_instance):
-    """
-    Sends a new game email using a fresh Game instance from the DB.
-    """
-    # Fetch fresh object from DB to avoid cached/stale data
-    game = Games.objects.get(pk=game_instance.pk)
+def send_new_game_email(about_instance):
+    game = about_instance.game
+    about = about_instance
 
     subject = f"⚡ NEW GAME DROP: {game.game_name}!"
 
@@ -21,7 +18,7 @@ def send_new_game_email(game_instance):
 
     html_content = render_to_string(
         "emails/new_game_email.html",
-        {"game": game}  # always use fresh object
+        {"game": game, "about": about}
     )
 
     text_content = f"""
@@ -46,9 +43,5 @@ def send_new_game_email(game_instance):
 
 @receiver(post_save, sender=About)
 def notify_game_ready(sender, instance, created, **kwargs):
-    if not created:
-        return
-
-    # Always fetch a fresh Game instance directly from DB
-    game = Games.objects.get(pk=instance.game_id)
-    send_new_game_email(game)
+    if created:
+        send_new_game_email(instance)

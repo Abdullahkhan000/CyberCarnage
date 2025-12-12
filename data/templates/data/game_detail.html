@@ -3,9 +3,6 @@
 
 {% block content %}
 <style>
-/* =====================
-   EXISTING STYLES
-   ===================== */
 @keyframes dynamicPan {
     0% { transform: scale(1.15) translateX(0); }
     50% { transform: scale(1.1) translateX(-8%); }
@@ -45,9 +42,6 @@
 .scrollable::-webkit-scrollbar-thumb { background-color: #00f3ff; border-radius: 3px; }
 .scrollable::-webkit-scrollbar-track { background-color: rgba(0, 0, 0, 0.2); }
 
-/* =====================
-   DISQUS OVERRIDES
-   ===================== */
 #disqus_thread {
     color-scheme: dark;
 }
@@ -64,7 +58,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
 
 <div class="min-h-screen bg-black text-gray-100 py-6 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-    <!-- Background grid & gradient -->
     <div class="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black pointer-events-none"></div>
 
@@ -82,7 +75,6 @@
                 </h1>
             </div>
 
-            <!-- Content -->
             <div class="p-4 sm:p-8 space-y-6">
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 border-b border-white/10 pb-4 sm:pb-6 auto-rows-min">
                     <div class="border-l-4 border-purple-500 pl-3">

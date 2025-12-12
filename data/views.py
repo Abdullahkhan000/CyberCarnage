@@ -245,7 +245,6 @@ class AboutView(APIView):
 
 # GameInfo Views
 
-
 class GameInfoView(APIView):
     search_fields = ["game", "composer"]
     ordering_fields = ["multiplayer", "playable"]
@@ -353,8 +352,6 @@ class GameInfoView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-# Class ChatAPiView
 def can_use_ai(user):
     today = date.today()
     if user.last_used != today:
@@ -368,10 +365,6 @@ def get_client_ip(request):
         return x_forwarded_for.split(",")[0]
     return request.META.get("REMOTE_ADDR")
 
-
-# ==========================
-# Chat API
-# ==========================
 @method_decorator(csrf_exempt, name="dispatch")
 class ChatAPIView(APIView):
     permission_classes = [AllowAny]
@@ -406,7 +399,6 @@ class ChatAPIView(APIView):
                 status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
-        # Save user message
         ChatMessage.objects.create(user=user, role="user", message=message)
         today = date.today()
         if user.last_used != today:
@@ -415,9 +407,6 @@ class ChatAPIView(APIView):
         user.last_used = today
         user.save()
 
-        # =======================
-        # Call Gemini AI
-        # =======================
         try:
             import google.generativeai as genai
 
@@ -440,9 +429,6 @@ class ChatAPIView(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-# ==========================
-# Chat History API
-# ==========================
 @method_decorator(csrf_exempt, name="dispatch")
 class ChatHistoryAPIView(APIView):
     def get(self, request):
@@ -455,8 +441,8 @@ class ChatHistoryAPIView(APIView):
             return Response({"messages": []}, status=200)
 
         messages = ChatMessage.objects.filter(user=user).order_by("created_at")
-        serializer = ChatHistorySerializer(messages, many=True)
-        return Response({"messages": serializer.data}, status=200)
+        serializer = ChatHistorySerializer({"messages": messages})
+        return Response(serializer.data, status=200)
 
 
 def games_list_view(request):

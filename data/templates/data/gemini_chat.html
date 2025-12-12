@@ -51,14 +51,23 @@ msgInput.addEventListener("input", () => {
     msgInput.style.height = msgInput.scrollHeight + "px";
 });
 
-// Typewriter Effect
 function typeWriter(el, text, speed=12){
     let i=0;
     return new Promise(resolve=>{
         const interval=setInterval(()=>{
-            if(i<text.length){ el.innerHTML += text.charAt(i++); chatBox.scrollTop = chatBox.scrollHeight; }
+            if(i<text.length){
+                el.innerHTML += text.charAt(i++);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
             else{ clearInterval(interval); resolve(); }
         }, speed);
+    });
+}
+
+function linkify(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, function(url) {
+        return `<a href="${url}" target="_blank" class="text-cyan-300 underline">${url}</a>`;
     });
 }
 
@@ -71,9 +80,37 @@ function addUserMessage(text){
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+function addAIMessageInstant(text){
+    const wrap=document.createElement("div");
+    wrap.className="flex items-start gap-3 animate-slide-in";
+
+    const safeHTML = linkify(text);
+
+    wrap.innerHTML=`<img src="${AI_AVATAR}" class="w-10 h-10 rounded-lg opacity-70">
+                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-gray-200 max-w-[80%]">
+                        <div class="ai-text">${safeHTML}</div>
+                        <div class="flex gap-4 mt-2 text-xs">
+                            <button class="copy-btn text-cyan-300 underline">Copy</button>
+                            <button class="share-btn text-purple-300 underline">Share</button>
+                        </div>
+                    </div>`;
+    chatBox.appendChild(wrap);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    wrap.querySelector(".copy-btn").onclick = ()=> {
+        navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+    };
+    wrap.querySelector(".share-btn").onclick = ()=> {
+        navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`);
+        alert("Copied to clipboard!");
+    };
+}
+
 async function addAIMessage(text){
     const wrap=document.createElement("div");
     wrap.className="flex items-start gap-3 animate-slide-in";
+
     wrap.innerHTML=`<img src="${AI_AVATAR}" class="w-10 h-10 rounded-lg opacity-70">
                     <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-gray-200 max-w-[80%]">
                         <div class="ai-text"></div>
@@ -87,9 +124,16 @@ async function addAIMessage(text){
 
     const textDiv=wrap.querySelector(".ai-text");
     await typeWriter(textDiv, text);
+    textDiv.innerHTML = linkify(textDiv.innerHTML);
 
-    wrap.querySelector(".copy-btn").onclick = ()=> navigator.clipboard.writeText(text);
-    wrap.querySelector(".share-btn").onclick = ()=> navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`);
+    wrap.querySelector(".copy-btn").onclick = ()=> {
+        navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+    };
+    wrap.querySelector(".share-btn").onclick = ()=> {
+        navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`);
+        alert("Copied to clipboard!");
+    };
 }
 
 let aiTyping = false;
@@ -141,9 +185,11 @@ async function loadHistory(){
     try{
         const res=await fetch("{% url 'chat_history' %}", { headers: {"X-GUEST-ID": guestId} });
         const data=await res.json();
-        if(data.messages.length===0) await addAIMessage("👋 Welcome! Ask me anything.");
-        else for(const msg of data.messages){ msg.role==="user"?addUserMessage(msg.message):await addAIMessage(msg.message); }
-    }catch(e){ await addAIMessage("❌ Failed to load history"); }
+        if(data.messages.length===0) addAIMessageInstant("👋 Welcome! Ask me anything.");
+        else for(const msg of data.messages){
+            msg.role==="user"?addUserMessage(msg.message):addAIMessageInstant(msg.message);
+        }
+    }catch(e){ addAIMessageInstant("❌ Failed to load history"); }
 }
 
 window.onload=loadHistory;
@@ -157,6 +203,7 @@ window.onload=loadHistory;
 .animate-slide-in { animation: slideIn .45s ease; }
 
 #send-btn { font-size: 2rem; padding: 0.25rem 0.5rem; }
+a { word-break: break-all; }
 </style>
 
 {% endblock %}
