@@ -67,7 +67,7 @@ function typeWriter(el, text, speed=12){
 function linkify(text) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, function(url) {
-        return `<a href="${url}" target="_blank" class="text-cyan-300 underline">${url}</a>`;
+        return `<a href="${url}" target="_blank">${url}</a>`;
     });
 }
 
@@ -81,19 +81,23 @@ function addUserMessage(text){
 }
 
 function addAIMessageInstant(text){
-    const wrap=document.createElement("div");
-    wrap.className="flex items-start gap-3 animate-slide-in";
+    const wrap = document.createElement("div");
+    wrap.className = "flex items-start gap-3 animate-slide-in";
 
     const safeHTML = linkify(text);
 
-    wrap.innerHTML=`<img src="${AI_AVATAR}" class="w-10 h-10 rounded-lg opacity-70">
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-gray-200 max-w-[80%]">
-                        <div class="ai-text">${safeHTML}</div>
-                        <div class="flex gap-4 mt-2 text-xs">
-                            <button class="copy-btn text-cyan-300 underline">Copy</button>
-                            <button class="share-btn text-purple-300 underline">Share</button>
-                        </div>
-                    </div>`;
+    wrap.innerHTML = `
+        <img src="${AI_AVATAR}" class="w-12 h-12 rounded-lg opacity-80">
+        <div class="bg-gradient-to-r from-cyan-600/30 via-purple-600/20 to-pink-500/20
+                    backdrop-blur-lg p-5 rounded-3xl border border-white/10
+                    text-gray-100 max-w-[80%] font-mono shadow-lg hover:shadow-cyan-500/50 transition">
+            <div class="ai-text">${safeHTML}</div>
+            <div class="flex gap-4 mt-3 text-xs">
+                <button class="copy-btn text-cyan-300 hover:text-cyan-200 underline">Copy</button>
+                <button class="share-btn text-purple-300 hover:text-purple-200 underline">Share</button>
+            </div>
+        </div>
+    `;
     chatBox.appendChild(wrap);
     chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -108,21 +112,25 @@ function addAIMessageInstant(text){
 }
 
 async function addAIMessage(text){
-    const wrap=document.createElement("div");
-    wrap.className="flex items-start gap-3 animate-slide-in";
+    const wrap = document.createElement("div");
+    wrap.className = "flex items-start gap-3 animate-slide-in";
 
-    wrap.innerHTML=`<img src="${AI_AVATAR}" class="w-10 h-10 rounded-lg opacity-70">
-                    <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-gray-200 max-w-[80%]">
-                        <div class="ai-text"></div>
-                        <div class="flex gap-4 mt-2 text-xs">
-                            <button class="copy-btn text-cyan-300 underline">Copy</button>
-                            <button class="share-btn text-purple-300 underline">Share</button>
-                        </div>
-                    </div>`;
+    wrap.innerHTML = `
+        <img src="${AI_AVATAR}" class="w-12 h-12 rounded-lg opacity-80">
+        <div class="bg-gradient-to-r from-cyan-600/30 via-purple-600/20 to-pink-500/20
+                    backdrop-blur-lg p-5 rounded-3xl border border-white/10
+                    text-gray-100 max-w-[80%] font-mono shadow-lg hover:shadow-cyan-500/50 transition">
+            <div class="ai-text"></div>
+            <div class="flex gap-4 mt-3 text-xs">
+                <button class="copy-btn text-cyan-300 hover:text-cyan-200 underline">Copy</button>
+                <button class="share-btn text-purple-300 hover:text-purple-200 underline">Share</button>
+            </div>
+        </div>
+    `;
     chatBox.appendChild(wrap);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-    const textDiv=wrap.querySelector(".ai-text");
+    const textDiv = wrap.querySelector(".ai-text");
     await typeWriter(textDiv, text);
     textDiv.innerHTML = linkify(textDiv.innerHTML);
 
@@ -204,6 +212,14 @@ window.onload=loadHistory;
 
 #send-btn { font-size: 2rem; padding: 0.25rem 0.5rem; }
 a { word-break: break-all; }
+.ai-text a {
+    color: #00f3ff;
+    text-decoration: underline;
+    transition: text-shadow 0.2s ease;
+}
+.ai-text a:hover {
+    text-shadow: 0 0 6px #00f3ff;
+}
 </style>
 
 {% endblock %}

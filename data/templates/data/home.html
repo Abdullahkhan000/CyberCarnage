@@ -32,6 +32,7 @@ select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  cursor: pointer;
 }
 
 select option {
@@ -63,40 +64,68 @@ select option {
   <input type="text" id="filter-game-name" placeholder="Game Name"
          class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl
                 text-white font-bold tracking-wide text-lg uppercase placeholder:text-cyan-300
-                focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all">
+                focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all w-full">
 
-  <select id="filter-series"
-          class="px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
-                 text-white font-bold tracking-wide text-lg uppercase focus:outline-none
-                 focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all">
-    <option value="">All Series</option>
-  </select>
+  <div class="relative w-full group">
+    <select id="filter-series"
+            class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
+                   text-white font-bold tracking-wide text-lg uppercase focus:outline-none
+                   focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+      <option value="">All Series</option>
+    </select>
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400 transition-transform duration-300 transform group-focus-within:rotate-180">
+      <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+      </svg>
+    </div>
+  </div>
 
-  <select id="filter-company"
-          class="px-4 py-3 bg-gradient-to-r from-pink-500/30 to-purple-500/30 border border-cyan-400 rounded-xl
-                 text-white font-bold tracking-wide text-lg uppercase focus:outline-none
-                 focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all">
-    <option value="">All Developers</option>
-  </select>
+  <div class="relative w-full group">
+    <select id="filter-company"
+            class="w-full px-4 py-3 bg-gradient-to-r from-pink-500/30 to-purple-500/30 border border-cyan-400 rounded-xl
+                   text-white font-bold tracking-wide text-lg uppercase focus:outline-none
+                   focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+      <option value="">All Developers</option>
+    </select>
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400 transition-transform duration-300 transform group-focus-within:rotate-180">
+      <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+      </svg>
+    </div>
+  </div>
 
-  <select id="filter-platform"
-          class="px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
-                 text-white font-bold tracking-wide text-lg uppercase focus:outline-none
-                 focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all">
-    <option value="">All Platforms</option>
-  </select>
+  <div class="relative w-full group">
+    <select id="filter-platform"
+            class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
+                   text-white font-bold tracking-wide text-lg uppercase focus:outline-none
+                   focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+      <option value="">All Platforms</option>
+    </select>
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400 transition-transform duration-300 transform group-focus-within:rotate-180">
+      <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+      </svg>
+    </div>
+  </div>
 
-  <select id="filter-year"
-          class="px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
-                 text-white font-bold tracking-wide text-lg uppercase focus:outline-none
-                 focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all">
-    <option value="">All Years</option>
-  </select>
+  <div class="relative w-full group">
+    <select id="filter-year"
+            class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
+                   text-white font-bold tracking-wide text-lg uppercase focus:outline-none
+                   focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+      <option value="">All Years</option>
+    </select>
+    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400 transition-transform duration-300 transform group-focus-within:rotate-180">
+      <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+      </svg>
+    </div>
+  </div>
 
   <input type="text" id="filter-steam-appid" placeholder="Steam AppID"
          class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl
                 text-white font-bold tracking-wide text-lg uppercase placeholder:text-cyan-300
-                focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all">
+                focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all w-full">
 
   <button id="clear-filters" class="col-span-full bg-gradient-to-r from-cyan-400 to-cyan-600
           hover:from-cyan-500 hover:to-cyan-700 text-black font-bold px-6 py-3 rounded-2xl
