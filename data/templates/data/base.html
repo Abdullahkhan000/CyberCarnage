@@ -153,7 +153,7 @@
             <nav class="hidden md:flex items-center space-x-8">
                 <a href="{% url 'AI_chat' %}"
                    class="text-gray-300 hover:text-white glitch-hover
-                   {% if request.resolver_match.url_name == 'home' %} hidden {% endif %}">
+                   {% if request.resolver_match.url_name == 'home' or 'AI_chat' %} hidden {% endif %}">
                     AI
                 </a>
                 <a href="{% url 'about_list' %}" class="text-gray-300 hover:text-white glitch-hover">ABOUT</a>

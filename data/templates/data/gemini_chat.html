@@ -3,33 +3,38 @@
 {% block title %}CyberCarnage AI{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto mt-6 pb-10 px-4">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<div class="max-w-4xl mx-auto mt-6 pb-10 px-4 sm:px-6 lg:px-8">
     <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
 
-    <h2 class="text-5xl font-display font-black text-center text-transparent bg-clip-text
-        bg-gradient-to-r from-pink-500 to-cyan-400 mb-8 glitch-hover">
+    <h2 class="text-4xl sm:text-5xl font-display font-black text-center text-transparent bg-clip-text
+        bg-gradient-to-r from-pink-500 to-cyan-400 mb-6 sm:mb-8 glitch-hover">
         CYBER<span class="text-cyan-400">CARNAGE AI</span>
     </h2>
 
     <div id="chat-history"
          class="bg-[#0B0B0B]/80 border border-white/10 rounded-2xl shadow-2xl
-                backdrop-blur-xl p-6 space-y-6 max-h-[70vh] overflow-y-auto touch-auto">
+                backdrop-blur-xl p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto touch-auto">
     </div>
 
-    <div id="typing" class="hidden mt-3 text-cyan-400 font-bold flex gap-3 items-center">
-        <span class="loader border-t-2 border-b-2 border-cyan-400 w-5 h-5 rounded-full animate-spin"></span>
+    <div id="typing" class="hidden mt-3 text-cyan-400 font-bold flex gap-2 sm:gap-3 items-center text-sm sm:text-base">
+        <span class="loader border-t-2 border-b-2 border-cyan-400 w-4 h-4 sm:w-5 sm:h-5 rounded-full animate-spin"></span>
         Thinking…
     </div>
 
-    <div class="mt-6 bg-[#111]/60 border border-white/20 rounded-2xl p-4 relative">
+    <div class="mt-4 sm:mt-6 bg-[#111]/60 border border-white/20 rounded-2xl p-3 sm:p-4 relative flex items-end">
         <textarea id="message" placeholder="Message CyberCarnage AI..." rows="1"
-                  class="w-full bg-transparent text-white resize-none outline-none font-mono"></textarea>
+                  class="w-full bg-transparent text-white resize-none outline-none font-mono text-sm sm:text-base p-2 sm:p-3 rounded-lg"></textarea>
 
-        <button id="send-btn" class="absolute right-1 bottom-2 text-cyan-400 hover:text-cyan-200 transition text-3xl font-bold">
+        <button id="send-btn" class="ml-2 text-cyan-400 hover:text-cyan-200 transition text-2xl sm:text-3xl font-bold flex-shrink-0">
             ➤
         </button>
     </div>
 </div>
+
 
 <script>
 const AI_AVATAR = "{% static 'img/ai.png' %}";
@@ -41,6 +46,10 @@ const sendBtn = document.getElementById("send-btn");
 const typing = document.getElementById("typing");
 
 let guestId;
+let abortController = null;
+let aiTyping = false;
+let typingInterval = null;
+
 try {
     guestId = localStorage.getItem("guest_id");
     if (!guestId) { guestId = crypto.randomUUID(); localStorage.setItem("guest_id", guestId); }
@@ -51,48 +60,130 @@ msgInput.addEventListener("input", () => {
     msgInput.style.height = msgInput.scrollHeight + "px";
 });
 
-function typeWriter(el, text, speed=12){
-    let i=0;
-    return new Promise(resolve=>{
-        const interval=setInterval(()=>{
-            if(i<text.length){
-                el.innerHTML += text.charAt(i++);
-                chatBox.scrollTop = chatBox.scrollHeight;
+function escapeHTML(str) {
+    return str.replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#39;");
+}
+
+function renderMarkdown(text) {
+    const html = marked.parse(text);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    // Highlight code blocks
+    tempDiv.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+    });
+
+    return tempDiv.innerHTML;
+}
+
+function typeWriter(el, text, speed = 12) {
+    let i = 0;
+    let finalContent = "";
+
+    return new Promise(resolve => {
+        typingInterval = setInterval(() => {
+
+            if (!aiTyping) {
+                clearInterval(typingInterval);
+                typingInterval = null;
+                resolve();
+                return;
             }
-            else{ clearInterval(interval); resolve(); }
+
+            if (i < text.length) {
+                const char = text.charAt(i++);
+
+                if (char === '\n') {
+                    finalContent += '<br>';
+                } else {
+                    finalContent += char;
+                }
+
+                el.innerHTML = finalContent;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                clearInterval(typingInterval);
+                typingInterval = null;
+                resolve();
+            }
+
         }, speed);
     });
 }
 
+
 function linkify(text) {
+    text = escapeHTML(text);
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, function(url) {
         return `<a href="${url}" target="_blank">${url}</a>`;
     });
 }
 
-function addUserMessage(text){
-    const div=document.createElement("div");
-    div.className="flex items-start gap-3 justify-end animate-slide-in";
-    div.innerHTML=`<div class="bg-cyan-400 text-black p-4 rounded-2xl max-w-[75%] shadow-lg font-mono">${text}</div>
-                   <img src="${USER_AVATAR}" class="w-10 h-10 rounded-lg">`;
+// === USER MESSAGE: SMALL ===
+function addUserMessageSmall(text) {
+    const div = document.createElement("div");
+    div.className = "flex justify-end animate-slide-in mb-2";
+
+    div.innerHTML = `
+        <div class="flex items-end gap-2">
+            <div class="bg-cyan-400 text-black font-sans font-semibold text-base sm:text-lg
+                         px-3 py-1 rounded-2xl rounded-tr-sm shadow-sm
+                         max-w-max break-words inline-block
+                         leading-[1.2]">
+                ${escapeHTML(text)}
+            </div>
+            <img src="${USER_AVATAR}" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex-shrink-0">
+        </div>
+    `;
+
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+// === USER MESSAGE: LONG ===
+function addUserMessageLong(text) {
+    const div = document.createElement("div");
+    div.className = "flex justify-end animate-slide-in mb-2";
+
+    div.innerHTML = `
+        <div class="flex items-end gap-2 justify-end w-full">
+            <div class="bg-cyan-400 text-black font-sans font-semibold text-sm sm:text-base
+                         px-4 py-2 rounded-2xl rounded-tr-sm shadow-sm
+                         max-w-[85%] sm:max-w-[70%] break-words whitespace-pre-wrap inline-block
+                         leading-relaxed transition-all duration-200">
+                ${escapeHTML(text)}
+            </div>
+            <img src="${USER_AVATAR}" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex-shrink-0">
+        </div>
+    `;
+
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function addAIMessageInstant(text){
+// === Helper function to decide small vs long ===
+function addUserMessage(text) {
+    const isShort = text.split("\n").length <= 1 && text.length <= 80;
+    if (isShort) addUserMessageSmall(text);
+    else addUserMessageLong(text);
+}
+
+function addAIMessageInstant(text, markdown=false){
     const wrap = document.createElement("div");
     wrap.className = "flex items-start gap-3 animate-slide-in";
 
-    const safeHTML = linkify(text);
+    const content = markdown ? renderMarkdown(text) : linkify(text);
 
     wrap.innerHTML = `
-        <img src="${AI_AVATAR}" class="w-12 h-12 rounded-lg opacity-80">
-        <div class="bg-gradient-to-r from-cyan-600/30 via-purple-600/20 to-pink-500/20
-                    backdrop-blur-lg p-5 rounded-3xl border border-white/10
-                    text-gray-100 max-w-[80%] font-mono shadow-lg hover:shadow-cyan-500/50 transition">
-            <div class="ai-text">${safeHTML}</div>
-            <div class="flex gap-4 mt-3 text-xs">
+        <img src="${AI_AVATAR}" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg opacity-80 mt-1 flex-shrink-0">
+        <div class="bg-[#1C1C1C] text-gray-100 max-w-[85%] sm:max-w-[85%] font-sans p-3 sm:p-4 rounded-xl rounded-tl-sm shadow-lg border border-white/5 ai-message-content">
+            <div class="ai-text">${content}</div>
+            <div class="flex gap-4 mt-3 text-xs sm:text-sm">
                 <button class="copy-btn text-cyan-300 hover:text-cyan-200 underline">Copy</button>
                 <button class="share-btn text-purple-300 hover:text-purple-200 underline">Share</button>
             </div>
@@ -103,11 +194,17 @@ function addAIMessageInstant(text){
 
     wrap.querySelector(".copy-btn").onclick = ()=> {
         navigator.clipboard.writeText(text);
-        alert("Copied to clipboard!");
+        const btn = wrap.querySelector(".copy-btn");
+        const originalText = btn.innerText;
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = originalText, 1000);
     };
     wrap.querySelector(".share-btn").onclick = ()=> {
         navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`);
-        alert("Copied to clipboard!");
+        const btn = wrap.querySelector(".share-btn");
+        const originalText = btn.innerText;
+        btn.innerText = "Shared!";
+        setTimeout(() => btn.innerText = originalText, 1000);
     };
 }
 
@@ -116,12 +213,10 @@ async function addAIMessage(text){
     wrap.className = "flex items-start gap-3 animate-slide-in";
 
     wrap.innerHTML = `
-        <img src="${AI_AVATAR}" class="w-12 h-12 rounded-lg opacity-80">
-        <div class="bg-gradient-to-r from-cyan-600/30 via-purple-600/20 to-pink-500/20
-                    backdrop-blur-lg p-5 rounded-3xl border border-white/10
-                    text-gray-100 max-w-[80%] font-mono shadow-lg hover:shadow-cyan-500/50 transition">
+        <img src="${AI_AVATAR}" class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg opacity-80 mt-1 flex-shrink-0">
+        <div class="bg-[#1C1C1C] text-gray-100 max-w-[85%] sm:max-w-[85%] font-sans p-3 sm:p-4 rounded-xl rounded-tl-sm shadow-lg border border-white/5 ai-message-content">
             <div class="ai-text"></div>
-            <div class="flex gap-4 mt-3 text-xs">
+            <div class="flex gap-4 mt-3 text-xs sm:text-sm">
                 <button class="copy-btn text-cyan-300 hover:text-cyan-200 underline">Copy</button>
                 <button class="share-btn text-purple-300 hover:text-purple-200 underline">Share</button>
             </div>
@@ -132,29 +227,41 @@ async function addAIMessage(text){
 
     const textDiv = wrap.querySelector(".ai-text");
     await typeWriter(textDiv, text);
-    textDiv.innerHTML = linkify(textDiv.innerHTML);
+
+    if (aiTyping) {
+        textDiv.innerHTML = renderMarkdown(text);
+    }
 
     wrap.querySelector(".copy-btn").onclick = ()=> {
         navigator.clipboard.writeText(text);
-        alert("Copied to clipboard!");
+        const btn = wrap.querySelector(".copy-btn");
+        const originalText = btn.innerText;
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = originalText, 1000);
     };
     wrap.querySelector(".share-btn").onclick = ()=> {
         navigator.clipboard.writeText(`CyberCarnage AI Response:\n\n${text}`);
-        alert("Copied to clipboard!");
+        const btn = wrap.querySelector(".share-btn");
+        const originalText = btn.innerText;
+        btn.innerText = "Shared!";
+        setTimeout(() => btn.innerText = originalText, 1000);
     };
 }
 
-let aiTyping = false;
 async function sendMessage(){
     const msg=msgInput.value.trim();
     if(!msg) return;
 
     addUserMessage(msg);
     msgInput.value="";
+    msgInput.style.height = "auto";
     typing.classList.remove("hidden");
 
     sendBtn.innerText = "⏹";
+    sendBtn.title = "Stop generating";
     aiTyping = true;
+    abortController = new AbortController();
+    const signal = abortController.signal;
 
     try{
         const res=await fetch("{% url 'api_ai_chat' %}", {
@@ -164,25 +271,55 @@ async function sendMessage(){
                 "X-CSRFToken":"{{ csrf_token }}",
                 "X-GUEST-ID": guestId
             },
-            body: JSON.stringify({message:msg})
+            body: JSON.stringify({message:msg}),
+            signal: signal
         });
         const data=await res.json();
-        if(!res.ok) await addAIMessage(data.error||`❌ Error ${res.status}`);
-        else await addAIMessage(data.response);
-    }catch(e){ console.error(e); await addAIMessage("❌ Backend unreachable"); }
+
+        if (signal.aborted) {
+            return;
+        }
+
+        if(!res.ok) {
+            await addAIMessage(data.error || `❌ Error ${res.status}`);
+        } else {
+            await addAIMessage(data.response || "No response received.");
+        }
+
+    }catch(e){
+        if (e.name === 'AbortError') {
+             console.log("Fetch aborted successfully.");
+             addAIMessageInstant("🛑 Request stopped by user.", false);
+        } else {
+             console.error(e);
+             await addAIMessage("❌ Backend unreachable or network error.");
+        }
+    }
     finally{
         typing.classList.add("hidden");
         aiTyping=false;
         sendBtn.innerText = "➤";
+        sendBtn.title = "Send message";
+        abortController = null;
     }
 }
 
-sendBtn.onclick = ()=> {
-    if(aiTyping){
-        aiTyping=false;
-        sendBtn.innerText = "➤";
+sendBtn.onclick = () => {
+    if (aiTyping) {
+        aiTyping = false;
+        if (abortController) {
+            abortController.abort();
+        }
+        if (typingInterval) {
+            clearInterval(typingInterval);
+            typingInterval = null;
+        }
         typing.classList.add("hidden");
-    } else sendMessage();
+        sendBtn.innerText = "➤";
+        sendBtn.title = "Send message";
+    } else {
+        sendMessage();
+    }
 };
 
 msgInput.addEventListener("keydown", e=>{
@@ -195,7 +332,7 @@ async function loadHistory(){
         const data=await res.json();
         if(data.messages.length===0) addAIMessageInstant("👋 Welcome! Ask me anything.");
         else for(const msg of data.messages){
-            msg.role==="user"?addUserMessage(msg.message):addAIMessageInstant(msg.message);
+            msg.role==="user"?addUserMessage(msg.message):addAIMessageInstant(msg.message, true);
         }
     }catch(e){ addAIMessageInstant("❌ Failed to load history"); }
 }
@@ -204,21 +341,50 @@ window.onload=loadHistory;
 </script>
 
 <style>
-#chat-history::-webkit-scrollbar { width: 7px; }
+body { overflow-x: hidden; font-size: 16px; }
+@media (max-width: 640px) { body { font-size: 14px; } }
+
+#chat-history { overflow-x: hidden; overflow-y: auto; }
+#chat-history::-webkit-scrollbar { width: 6px; }
 #chat-history::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 4px; }
+#chat-history::-webkit-scrollbar-track { background: transparent; }
+.ai-message-content {
+    line-height: 1.6;
+    word-break: break-word;
+    min-width: 0;
+    overflow-wrap: break-word;
+    padding: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .ai-message-content {
+        padding: 1rem;
+    }
+}
+.ai-text a { color: #00f3ff; text-decoration: underline; transition: text-shadow 0.2s ease; }
+.ai-text a:hover { text-shadow: 0 0 6px #00f3ff; }
+.ai-text p { margin-bottom: 0.8em; }
+.ai-text pre { background: #282c34; border-radius: 6px; padding: 0.8em; overflow-x: auto; margin: 0.8em 0; }
+.ai-text *:not(pre) > code {
+    background-color: #3b3e44;
+    border-radius: 3px;
+    padding: 0.1em 0.3em;
+    white-space: pre-wrap;
+}
+.ai-text code { font-family: 'Fira Code', 'Roboto Mono', monospace; font-size: 0.9em; color: #abb2bf; }
+.ai-text blockquote { border-left: 4px solid #c678dd; padding-left: 1em; margin: 1em 0; color: #b0b0b0; font-style: italic; }
+.ai-text ul, .ai-text ol { margin-left: 1.5em; margin-bottom: 0.8em; padding: 0; }
+.ai-text ul { list-style-type: disc; }
+.ai-text ol { list-style-type: decimal; }
+.ai-text h1, .ai-text h2, .ai-text h3 { color: #61afef; margin-top: 1.2em; margin-bottom: 0.5em; font-weight: bold; border-bottom: 1px solid #1c1c1c; padding-bottom: 0.2em; } /* Adjusted heading margins */
 
 @keyframes slideIn { from { opacity:0; transform:translateY(25px); } to { opacity:1; transform:translateY(0); } }
 .animate-slide-in { animation: slideIn .45s ease; }
 
-#send-btn { font-size: 2rem; padding: 0.25rem 0.5rem; }
-a { word-break: break-all; }
-.ai-text a {
-    color: #00f3ff;
-    text-decoration: underline;
-    transition: text-shadow 0.2s ease;
-}
-.ai-text a:hover {
-    text-shadow: 0 0 6px #00f3ff;
+#send-btn { font-size: 1.8rem; }
+@media (max-width: 480px) {
+    #send-btn { font-size: 1.5rem; }
+    textarea { font-size: 0.875rem; padding: 1.5vw; }
 }
 </style>
 
