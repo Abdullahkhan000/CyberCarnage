@@ -1,7 +1,6 @@
 # ⚡ CYBER CARNAGE: Next-Generation Gaming Intelligence 🤖⚔️
 
 ![CyberCarnage Home](screenshots/cod%20modern%20warfare%20filters%20homepage.png)  
-*Asset ID: cod modern warfare filters homepage.png*
 
 **Cyber Carnage** is a next-generation gaming intelligence & database platform built for **speed, precision, and an aggressive, visually stunning robotic gaming UI**. It transforms simple game metadata into a rich, immersive, and intelligent exploration experience.  
 
@@ -35,7 +34,6 @@ Designed with **performance, scalability, and maintainable architecture** in min
 ### Game Detail Examples
 
 ![Modern Warfare 2007](screenshots/details%20of%20modern%20warfare%202007.png)  
-*Asset ID: modern warfare 2007.png*
 
 **Key Features:**  
 - ⚡ **Critical Metadata:** Genres, ratings, developer, publisher, and more.  
@@ -45,7 +43,6 @@ Designed with **performance, scalability, and maintainable architecture** in min
 ### In-Game Info (The War Room)
 
 ![In-Game Info](screenshots/in-game%20info.png)  
-*Asset ID: in-game info.png*
 
 Go beyond summaries with **detailed, verifiable statistics**:  
 - Shows actual game stats (playtime, completion rate).  
@@ -55,7 +52,6 @@ Go beyond summaries with **detailed, verifiable statistics**:
 ### Community Intel (Disqus Integration)
 
 ![Disqus Comments](screenshots/disquss%20info.png)  
-*Asset ID: disquss info.png*
 
 Foster a **dynamic community without friction**:  
 - Users can leave reviews and feedback instantly.  
@@ -67,7 +63,6 @@ Foster a **dynamic community without friction**:
 ## 🧠 AI INTELLIGENCE LAYER: Your Robotic Assistant
 
 ![CyberCarnage AI](screenshots/cyber%20carnage%20ai.png)  
-*Asset ID: cyber carnage ai.png*
 
 The built-in **AI assistant** transforms the static database into a **living gaming intelligence system**:  
 - ❓ **Instant Analysis:** Ask direct questions about any game and receive intelligent responses.  
