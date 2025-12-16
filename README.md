@@ -36,7 +36,7 @@ Designed with **performance, scalability, and maintainable architecture** in min
 ![Modern Warfare 2007](screenshots/details%20of%20modern%20warfare%202007.png)  
 
 **Key Features:**  
-- ⚡ **Critical Metadata:** Genres, ratings, developer, publisher, and more.  
+- ⚡ **Critical Metadata:** Genres, ratings, developer, publisher, Steam link, Official site, and more.  
 - 📐 **Clean Layout:** Highly readable structure for long-form content.  
 - 🖤 **Visual Styling:** Aggressive robotic UI elements with dynamic highlights.  
 
