@@ -44,8 +44,7 @@ Designed with **performance, scalability, and maintainable architecture** in min
 
 ![In-Game Info](screenshots/in-game%20info.png)  
 
-Go beyond summaries with **detailed, verifiable statistics**:  
-- Shows actual game stats (playtime, completion rate).  
+Go beyond summaries with **detailed, verifiable statistics**:   
 - Dedicated panels for Multiplayer and Playable stats.  
 - Specialized metadata, e.g., Audio Engineer Stats.  
 
