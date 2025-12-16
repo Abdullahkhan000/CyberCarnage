@@ -34,7 +34,7 @@ Designed with **performance, scalability, and maintainable architecture** in min
 
 ### Game Detail Examples
 
-![Modern Warfare 2007](screenshots/modern%20warfare%202007.png)  
+![Modern Warfare 2007](screenshots/details%of%modern%warfare%2007.png)  
 *Asset ID: modern warfare 2007.png*
 
 **Key Features:**  
