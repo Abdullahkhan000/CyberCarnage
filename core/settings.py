@@ -172,3 +172,5 @@ CSRF_TRUSTED_ORIGINS = [
     "https://cybercarnage.onrender.com",
     "https://cyber-carnage.vercel.app",
 ]
+
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
