@@ -450,7 +450,7 @@ class ChatHistoryAPIView(APIView):
 #     return render(request, "data/home.html", {"games": games})
 
 def games_list_view(request):
-    game_queryset = Games.objects.all().order_by('created_at')
+    game_queryset = Games.objects.all().order_by('-created_at')
 
     paginator = Paginator(game_queryset, 8)
     page_number = request.GET.get('page')
