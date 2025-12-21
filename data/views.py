@@ -23,7 +23,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
 from rest_framework.pagination import PageNumberPagination
-
+from django.core.paginator import Paginator
 
 class GameView(APIView):
     search_fields = ["game_name", "release_date", "series", "developer", "publisher"]
@@ -445,15 +445,27 @@ class ChatHistoryAPIView(APIView):
         return Response(serializer.data, status=200)
 
 
-def games_list_view(request):
-    games = Games.objects.all()
-    return render(request, "data/home.html", {"games": games})
+# def games_list_view(request):
+#     games = Games.objects.all()
+#     return render(request, "data/home.html", {"games": games})
 
+def games_list_view(request):
+    game_queryset = Games.objects.all().order_by('created_at')
+
+    paginator = Paginator(game_queryset, 8)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        # 'games': page_obj.object_list,
+        'all_games': game_queryset,
+    }
+    return render(request, "data/home.html", context)
 
 def about_list_view(request):
     abouts = About.objects.all()
     return render(request, "data/about_list.html", {"abouts": abouts})
-
 
 def in_game_info_list_view(request):
     infos = GameInfo.objects.all()

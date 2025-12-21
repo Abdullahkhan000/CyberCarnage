@@ -6,10 +6,7 @@ CYBERCARNAGE | MAIN CATALOGUE
 
 {% block content %}
 <style>
-@keyframes slideInUp {
-  from { opacity: 0; transform: translateY(50px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes slideInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
 .card-entry { animation: slideInUp 0.6s ease-out forwards; }
 
 @keyframes borderPulse {
@@ -19,133 +16,109 @@ CYBERCARNAGE | MAIN CATALOGUE
 }
 .group:hover .pulsing-border { animation: borderPulse 0.5s infinite alternate; }
 
-@keyframes dynamicPan {
-  0% { transform: scale(1.1) translateX(0); }
-  50% { transform: scale(1.05) translateX(-5%); }
-  100% { transform: scale(1.1) translateX(0); }
-}
+@keyframes dynamicPan { 0% { transform: scale(1.1) translateX(0); } 50% { transform: scale(1.05) translateX(-5%); } 100% { transform: scale(1.1) translateX(0); } }
 .poster-move { animation: dynamicPan 20s linear infinite alternate; transform-origin: top left; }
 
-select {
-  background-color: rgba(0,0,0,0.7);
-  color: white;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  cursor: pointer;
-}
+select { background-color: rgba(0,0,0,0.7); color: white; appearance: none; cursor: pointer; }
+select option { background-color: rgba(0,0,0,0.85); color: white; }
 
-select option {
-  background-color: rgba(0,0,0,0.85);
-  color: white;
-}
+.page-btn { transition: all 0.3s; }
+.page-btn:hover { transform: scale(1.05); }
+.page-btn.active { background-color: #ec4899; color: white; }
+.dots { color: #aaa; }
 </style>
 
 <div class="relative z-10 container mx-auto px-4 py-12">
 
-<div class="text-center mb-16 border-b-2 border-cyan-500/30 pb-8">
-  <h1 class="text-4xl sm:text-5xl md:text-8xl font-display font-black uppercase tracking-tight
-             text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500
-             drop-shadow-[0_0_10px_rgba(236,72,153,0.5)] glitch-hover mb-4 break-words">
-    MAIN CATALOGUE
-  </h1>
-  <p class="text-gray-400 mt-2 text-lg font-mono tracking-wide mb-6 break-words">
-    Explore all <span class="text-pink-400">>> {{ games|length }}</span> games in our records.
-  </p>
-  <a href="{% url 'AI_chat' %}" class="inline-block bg-cyan-400 hover:bg-cyan-500 text-black font-bold
-             px-6 py-3 rounded-lg glitch-hover transition text-lg">
-    ASK CYBERCARNAGE AI FOR GAME INFO
-  </a>
-</div>
-
-<div class="mb-4 p-6 bg-black/70 rounded-2xl border border-cyan-500/40 backdrop-blur-md
-            grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-
-  <input type="text" id="filter-game-name" placeholder="Game Name"
-         class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl
-                text-white font-bold tracking-wide text-lg uppercase placeholder:text-cyan-300
-                focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all w-full">
-
-  <div class="relative w-full group">
-    <select id="filter-series"
-            class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
-                   text-white font-bold tracking-wide text-lg uppercase focus:outline-none
-                   focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
-      <option value="">All Series</option>
-    </select>
-    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400 transition-transform duration-300 transform group-focus-within:rotate-180">
-      <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-      </svg>
-    </div>
+  <div class="text-center mb-16 border-b-2 border-cyan-500/30 pb-8">
+    <h1 class="text-4xl sm:text-5xl md:text-8xl font-display font-black uppercase tracking-tight
+               text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500
+               drop-shadow-[0_0_10px_rgba(236,72,153,0.5)] glitch-hover mb-4 break-words">
+      MAIN CATALOGUE
+    </h1>
+    <p class="text-gray-400 mt-2 text-lg font-mono tracking-wide mb-6 break-words">
+      Explore all <span class="text-pink-400">>> {{ all_games.count }}</span> games in our records.
+    </p>
+    <a href="{% url 'AI_chat' %}" class="inline-block bg-cyan-400 hover:bg-cyan-500 text-black font-bold
+               px-6 py-3 rounded-lg glitch-hover transition text-lg">
+      ASK CYBERCARNAGE AI FOR GAME INFO
+    </a>
   </div>
 
-  <div class="relative w-full group">
-    <select id="filter-company"
-            class="w-full px-4 py-3 bg-gradient-to-r from-pink-500/30 to-purple-500/30 border border-cyan-400 rounded-xl
-                   text-white font-bold tracking-wide text-lg uppercase focus:outline-none
-                   focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
-      <option value="">All Developers</option>
-    </select>
-    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400 transition-transform duration-300 transform group-focus-within:rotate-180">
-      <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-      </svg>
+  <!-- Filters -->
+  <div class="mb-4 p-6 bg-black/70 rounded-2xl border border-cyan-500/40 backdrop-blur-md
+              grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+
+    <input type="text" id="filter-game-name" placeholder="Game Name" class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase placeholder:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all w-full">
+
+    <div class="relative w-full group">
+      <select id="filter-series" class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+        <option value="">All Series</option>
+        {% for game in all_games %}
+          {% if game.series %}
+            <option value="{{ game.series }}">{{ game.series }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
     </div>
+
+    <div class="relative w-full group">
+      <select id="filter-company" class="w-full px-4 py-3 bg-gradient-to-r from-pink-500/30 to-purple-500/30 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+        <option value="">All Developers</option>
+        {% for game in all_games %}
+          {% if game.developer %}
+            <option value="{{ game.developer }}">{{ game.developer }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="relative w-full group">
+      <select id="filter-platform" class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+        <option value="">All Platforms</option>
+        {% for game in all_games %}
+          {% with detail=game.details.first %}
+            {% if detail and detail.platform %}
+              <option value="{{ detail.platform }}">{{ detail.platform }}</option>
+            {% endif %}
+          {% endwith %}
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="relative w-full group">
+      <select id="filter-year" class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+        <option value="">All Years</option>
+        {% for game in all_games %}
+          {% if game.release_date %}
+            <option value="{{ game.release_date|date:'Y' }}">{{ game.release_date|date:'Y' }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+
+    <input type="text" id="filter-steam-appid" placeholder="Steam AppID" class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase placeholder:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all w-full">
+
+    <button id="clear-filters" class="col-span-full bg-gradient-to-r from-cyan-400 to-cyan-600 hover:from-cyan-500 hover:to-cyan-700 text-black font-bold px-6 py-3 rounded-2xl uppercase tracking-wider text-lg shadow-lg transition-all">
+      Clear Filters
+    </button>
   </div>
 
-  <div class="relative w-full group">
-    <select id="filter-platform"
-            class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
-                   text-white font-bold tracking-wide text-lg uppercase focus:outline-none
-                   focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
-      <option value="">All Platforms</option>
-    </select>
-    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400 transition-transform duration-300 transform group-focus-within:rotate-180">
-      <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-      </svg>
-    </div>
+  <div id="active-filters" class="mb-6 max-w-5xl mx-auto flex flex-wrap gap-2"></div>
+
+  <div id="no-results" class="col-span-full flex flex-col items-center justify-center py-20 text-center text-gray-500 hidden">
+    <div class="text-6xl mb-4 text-red-500 animate-pulse-slow">🛑</div>
+    <h3 class="text-2xl font-display font-bold">NO MATCHING RESULTS FOUND</h3>
+    <p class="text-gray-600 font-mono mt-2">TRY ADJUSTING OR CLEARING THE FILTERS.</p>
   </div>
 
-  <div class="relative w-full group">
-    <select id="filter-year"
-            class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl
-                   text-white font-bold tracking-wide text-lg uppercase focus:outline-none
-                   focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
-      <option value="">All Years</option>
-    </select>
-    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-cyan-400 transition-transform duration-300 transform group-focus-within:rotate-180">
-      <svg class="h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-      </svg>
-    </div>
-  </div>
-
-  <input type="text" id="filter-steam-appid" placeholder="Steam AppID"
-         class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl
-                text-white font-bold tracking-wide text-lg uppercase placeholder:text-cyan-300
-                focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all w-full">
-
-  <button id="clear-filters" class="col-span-full bg-gradient-to-r from-cyan-400 to-cyan-600
-          hover:from-cyan-500 hover:to-cyan-700 text-black font-bold px-6 py-3 rounded-2xl
-          uppercase tracking-wider text-lg shadow-lg transition-all">
-    Clear Filters
-  </button>
-</div>
-
-<div id="active-filters" class="mb-6 max-w-5xl mx-auto flex flex-wrap gap-2"></div>
-
-<div id="no-results" class="col-span-full flex flex-col items-center justify-center py-20 text-center text-gray-500 hidden">
-  <div class="text-6xl mb-4 text-red-500 animate-pulse-slow">🛑</div>
-  <h3 class="text-2xl font-display font-bold">NO MATCHING RESULTS FOUND</h3>
-  <p class="text-gray-600 font-mono mt-2">TRY ADJUSTING OR CLEARING THE FILTERS.</p>
-</div>
-
+  <!-- Cards -->
 <div id="cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-  {% for game in games %}
+  {% for game in all_games %}
     {% with detail=game.details.first %}
-      <div class="group relative bg-cyber-gray/60 backdrop-blur-md rounded-xl border border-gray-700/50 overflow-hidden hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(236,72,153,0.4)] transition-all duration-500 ease-out cursor-pointer card-entry"
+      <div class="group relative bg-cyber-gray/60 backdrop-blur-md rounded-xl border border-gray-700/50
+                  overflow-hidden hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(236,72,153,0.4)]
+                  transition-all duration-500 ease-out cursor-pointer card-entry"
            style="animation-delay: {{ forloop.counter }}00ms; opacity: 0;"
            data-game-name="{{ game.game_name|lower }}"
            data-series="{{ game.series|default_if_none:''|lower }}"
@@ -167,7 +140,7 @@ select option {
           {% if detail and detail.poster %}
             <img src="{{ detail.poster }}" alt="{{ game.game_name }}" class="w-full h-full object-cover poster-move transition-transform duration-700 ease-in-out">
           {% else %}
-            <div class="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500 font-mono"> NO POSTER </div>
+            <div class="w-full h-full bg-gray-800 flex items-center justify-center text-gray-500 font-mono">NO POSTER</div>
           {% endif %}
           {% if game.series %}
             <span class="absolute top-3 left-3 z-20 bg-black/70 backdrop-blur-sm border border-purple-500/50 text-purple-400 text-xs font-mono uppercase px-3 py-1 rounded-full shadow-lg">
@@ -212,114 +185,166 @@ select option {
             {% endif %}
           </div>
         </div>
-
       </div>
     {% endwith %}
-  {% empty %}
-    <div class="col-span-full flex flex-col items-center justify-center py-20 text-center text-gray-500">
-      <div class="text-6xl mb-4 text-red-500 animate-pulse-slow">🛑</div>
-      <h3 class="text-2xl font-display font-bold">CRITICAL WARNING: NO GAMES FOUND</h3>
-      <p class="text-gray-600 font-mono mt-2">DATABASE INITIALIZATION FAILED. CONTACT SYSTEM ADMIN.</p>
-    </div>
   {% endfor %}
 </div>
 
+</div>
+
+{% with current_params=request.GET.urlencode %}
+<div id="pagination-container" class="mt-10 flex justify-center items-center space-x-2">
+
+    {% if page_obj.has_previous %}
+        <a class="page-btn px-4 py-2 bg-cyan-400 hover:bg-cyan-500 text-black rounded-lg font-bold"
+           href="?{% if current_params %}{{ current_params }}&{% endif %}page={{ page_obj.previous_page_number }}">« Prev</a>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+            <span class="page-btn px-4 py-2 bg-pink-500 text-white rounded-lg font-bold">{{ num }}</span>
+        {% else %}
+            <a class="page-btn px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-bold"
+               href="?{% if current_params %}{{ current_params }}&{% endif %}page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a class="page-btn px-4 py-2 bg-cyan-400 hover:bg-cyan-500 text-black rounded-lg font-bold"
+           href="?{% if current_params %}{{ current_params }}&{% endif %}page={{ page_obj.next_page_number }}">Next »</a>
+    {% endif %}
+
+</div>
+{% endwith %}
+
+
+<!-- ===== JS Filters + Pagination ===== -->
 <script>
-const filters = {
-  gameName: document.getElementById('filter-game-name'),
-  series: document.getElementById('filter-series'),
-  company: document.getElementById('filter-company'),
-  platform: document.getElementById('filter-platform'),
-  year: document.getElementById('filter-year'),
-  steamAppid: document.getElementById('filter-steam-appid'),
-};
+(function() {
 
-const clearBtn = document.getElementById('clear-filters');
-const activeFiltersDiv = document.getElementById('active-filters');
-const cards = document.querySelectorAll('.card-entry');
-const noResults = document.getElementById('no-results');
-
-for (let y = 1970; y <= 2025; y++) {
-  filters.year.innerHTML += `<option value="${y}">${y}</option>`;
-}
-
-function populateDropdowns() {
-  const seriesSet = new Set();
-  const companySet = new Set();
-  const platformSet = new Set();
-
-  cards.forEach(card => {
-    if(card.dataset.series) seriesSet.add(card.dataset.series);
-    if(card.dataset.company) companySet.add(card.dataset.company);
-    if(card.dataset.platform) platformSet.add(card.dataset.platform);
-  });
-
-  filters.series.innerHTML = '<option value="">All Series</option>';
-  filters.company.innerHTML = '<option value="">All Developers</option>';
-  filters.platform.innerHTML = '<option value="">All Platforms</option>';
-
-  seriesSet.forEach(v => filters.series.innerHTML += `<option value="${v}">${v}</option>`);
-  companySet.forEach(v => filters.company.innerHTML += `<option value="${v}">${v}</option>`);
-  platformSet.forEach(v => filters.platform.innerHTML += `<option value="${v}">${v}</option>`);
-}
-
-function applyFilters() {
-  const values = {
-    gameName: filters.gameName.value.toLowerCase(),
-    series: filters.series.value.toLowerCase(),
-    company: filters.company.value.toLowerCase(),
-    platform: filters.platform.value.toLowerCase(),
-    year: filters.year.value.toString(),
-    steamAppid: filters.steamAppid.value,
+  const filters = {
+    gameName: document.getElementById('filter-game-name'),
+    series: document.getElementById('filter-series'),
+    company: document.getElementById('filter-company'),
+    platform: document.getElementById('filter-platform'),
+    year: document.getElementById('filter-year'),
+    steamAppid: document.getElementById('filter-steam-appid'),
   };
 
-  activeFiltersDiv.innerHTML = '';
-  for (const [key, val] of Object.entries(values)) {
-    if(val) {
-      const badge = document.createElement('span');
-      badge.className = "bg-red-600 text-white px-3 py-1 rounded-full text-xs";
-      badge.textContent = val;
-      activeFiltersDiv.appendChild(badge);
-    }
+  const clearBtn = document.getElementById('clear-filters');
+  const cards = Array.from(document.querySelectorAll('.card-entry'));
+  const noResults = document.getElementById('no-results');
+
+  const ITEMS_PER_PAGE = 8;
+  let currentPage = 1;
+
+  /* ================= URL HELPERS ================= */
+  function getParams() {
+    return new URLSearchParams(window.location.search);
   }
 
-  let visibleCount = 0;
+  function setURL(values, page = 1) {
+  const params = new URLSearchParams(window.location.search);
 
-  cards.forEach(card => {
-    const cardYear = card.dataset.year ? card.dataset.year.toString() : "";
-    const match =
-      card.dataset.gameName.includes(values.gameName) &&
-      card.dataset.series.includes(values.series) &&
-      card.dataset.company.includes(values.company) &&
-      card.dataset.platform.includes(values.platform) &&
-      (values.year === "" || cardYear === values.year) &&
-      card.dataset.steamAppid.includes(values.steamAppid);
+  // Remove old 'page' param
+  params.delete('page');
 
-    if (match) {
-      card.style.display = "";
-      visibleCount++;
-    } else {
-      card.style.display = "none";
-    }
+  // Add filter values
+  Object.entries(values).forEach(([key, val]) => {
+    if (val) params.set(key, val);
   });
 
-  noResults.classList.toggle("hidden", visibleCount !== 0);
+  // Add new page value
+  params.set('page', page);
+
+  // Update the URL
+  history.replaceState({}, '', '?' + params.toString());
 }
 
-Object.values(filters).forEach(input => {
-  input.addEventListener('input', applyFilters);
-  input.addEventListener('change', applyFilters);
-});
+  function readURL() {
+    const params = getParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key] && params.get(key)) {
+        filters[key].value = params.get(key);
+      }
+    });
+    currentPage = parseInt(params.get('page')) || 1;
+  }
 
-clearBtn.addEventListener('click', () => {
-  Object.values(filters).forEach(f => f.value = '');
-  applyFilters();
-});
+  /* ================= FILTER LOGIC ================= */
+  function val(el) {
+    return el ? el.value.toLowerCase().trim() : '';
+  }
 
-window.addEventListener('DOMContentLoaded', () => {
-  populateDropdowns();
+  function data(card, key) {
+    return card.dataset[key] ? card.dataset[key].toLowerCase() : '';
+  }
+
+  function applyFilters() {
+    const values = {
+      gameName: val(filters.gameName),
+      series: val(filters.series),
+      company: val(filters.company),
+      platform: val(filters.platform),
+      year: val(filters.year),
+      steamAppid: val(filters.steamAppid),
+    };
+
+    // Filter cards
+    const filtered = cards.filter(card => {
+      return data(card, 'gameName').includes(values.gameName) &&
+             data(card, 'series').includes(values.series) &&
+             data(card, 'company').includes(values.company) &&
+             data(card, 'platform').includes(values.platform) &&
+             (values.year === '' || data(card, 'year') === values.year) &&
+             data(card, 'steamAppid').includes(values.steamAppid);
+    });
+
+    // Show "no results" if empty
+    noResults.classList.toggle('hidden', filtered.length > 0);
+
+    // Paginate filtered cards
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    if (currentPage > totalPages) currentPage = 1;
+
+    cards.forEach(card => card.style.display = 'none'); // hide all
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    filtered.slice(start, end).forEach(card => card.style.display = '');
+
+    // Update URL (page + filters)
+    setURL(values, currentPage);
+  }
+
+  /* ================= EVENTS ================= */
+  Object.values(filters).forEach(input => {
+    if (!input) return;
+    input.addEventListener('input', () => { currentPage = 1; applyFilters(); });
+    input.addEventListener('change', () => { currentPage = 1; applyFilters(); });
+  });
+
+  if (clearBtn) {
+  clearBtn.addEventListener('click', () => {
+    // Clear all filter inputs
+    Object.values(filters).forEach(input => { if(input) input.value = ''; });
+    currentPage = 1;
+
+    // Apply filters (show all cards)
+    applyFilters();
+
+    // Clear all filter params from URL
+    const params = new URLSearchParams(window.location.search);
+    Object.keys(filters).forEach(key => params.delete(key)); // remove filter keys
+    params.delete('page'); // also remove page key
+    history.replaceState({}, '', '?' + params.toString());
+  });
+  }
+
+  /* ================= INIT ================= */
+  readURL();
   applyFilters();
-});
+
+})();
 </script>
 
 {% endblock %}
