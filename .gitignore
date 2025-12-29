@@ -6,6 +6,8 @@ db.sqlite3
 olddata.json
 olddata_utf8.json
 olddata_utf8v1.json
+render_backup.dump
+test.py
 data/aiwin.py
 data/static
 /staticfiles/
