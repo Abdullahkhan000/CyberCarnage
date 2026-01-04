@@ -142,9 +142,9 @@ CyberCarnage ensures:
 
 ---
 
-## 👨‍💻 DEPLOYMENT TEAM: CODE2ENCODER
+## 👨‍💻 DEPLOYMENT TEAM: CODE2ENCODER AKA SHADOW DEV
 
-**Code2Encoder** — Creator & Architect  
+**Code2Encoder/Shadown Dev** — Creator & Architect  
 - Name: Hafiz Muhammad Abdullah Ibrahim  
 - Role: Junior Developer  
 - Stack: Python, Django, DRF  
