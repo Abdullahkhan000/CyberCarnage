@@ -17,7 +17,7 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.conf import settings
-from .utils import can_use_ai, get_client_ip
+from .utils import can_use_ai, get_client_ip , get_obj_or_404
 from datetime import date
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -29,22 +29,13 @@ class GameView(APIView):
     search_fields = ["game_name", "release_date", "series", "developer", "publisher"]
     ordering_fields = ["release_date"]
 
-    def get_object(self, pk=None):
-        try:
-            return Games.objects.get(pk=pk)
-        except Games.DoesNotExist:
-            return None
-
     def get(self, request, pk=None):
         if pk:
-            obj = self.get_object(pk=pk)
-            if not obj:
-                return Response(
-                    {"success": False, "message": "No record found with this ID"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+            obj, error = get_obj_or_404(Games, pk)
+            if error:
+                return error
             serializer = GameSerializer(obj)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data)
 
         queryset = Games.objects.all()
         filterset = GameFilter(request.GET, queryset=queryset)
@@ -66,7 +57,6 @@ class GameView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-            # ---------------- Pagination ----------------
         paginator = PageNumberPagination()
         paginator.page_size = 5
         result_page = paginator.paginate_queryset(queryset, request)
@@ -86,42 +76,23 @@ class GameView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk=None):
-        if pk is None:
-            return Response(
-                {"error": "PATCH requires a primary key"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        obj = self.get_object(pk=pk)
-        if not obj:
-            return Response(
-                {"success": False, "message": "No record found with this ID"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        obj, error = get_obj_or_404(Games, pk)
+        if error:
+            return error
         serializer = GameSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {"message": "Data Patched successfully"},
-                status=status.HTTP_202_ACCEPTED,
-            )
+            return Response({"message": "Data patched successfully"}, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk=None):
-        if pk is None:
-            return Response(
-                {"error": "PUT requires the Primary Key"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        obj = self.get_object(pk=pk)
-        if not obj:
-            return Response(
-                {"error": "Object Data Not Found"}, status=status.HTTP_404_NOT_FOUND
-            )
+        obj, error = get_obj_or_404(Games, pk)
+        if error:
+            return error
         serializer = GameInfoSerializer(obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+            return Response({"message": "Data updated successfully"}, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -129,24 +100,13 @@ class AboutView(APIView):
     search_fields = ["summary", "steam_appid", "game__game_name"]
     ordering_fields = ["id"]
 
-    def get_object(self, pk=None):
-        try:
-            return About.objects.get(pk=pk)
-        except About.DoesNotExist:
-            return None
-
-    # ---------------- GET ----------------
     def get(self, request, pk=None):
         if pk:
-            obj = self.get_object(pk)
-            if not obj:
-                return Response(
-                    {"success": False, "message": "No record found with this ID"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
+            obj, error = get_obj_or_404(About, pk)
+            if error:
+                return error
             serializer = AboutSerializer(obj)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data)
 
         queryset = About.objects.all()
         filterset = AboutFilter(request.GET, queryset=queryset)
@@ -168,19 +128,12 @@ class AboutView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # return Response(
-        #     AboutSerializer(queryset, many=True).data,
-        #     status=status.HTTP_200_OK
-        # )
-
-        # ---------------- Pagination ----------------
         paginator = PageNumberPagination()
         paginator.page_size = 4
         result_page = paginator.paginate_queryset(queryset, request)
         serializer = AboutSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-    # ---------------- POST ----------------
     def post(self, request, pk=None):
         if pk is not None:
             return Response(
@@ -195,51 +148,24 @@ class AboutView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # ---------------- PATCH ----------------
-    def patch(self, request, pk=None):
-        if pk is None:
-            return Response(
-                {"error": "PATCH requires a primary key"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        obj = self.get_object(pk)
-        if not obj:
-            return Response(
-                {"success": False, "message": "No record found with this ID"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
+    def patch(self,request,pk=None):
+        obj, error = get_obj_or_404(About, pk)
+        if error:
+            return error
         serializer = AboutSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {"message": "Data patched successfully"},
-                status=status.HTTP_202_ACCEPTED,
-            )
-
+            return Response({"message": "Data updated successfully"}, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # ---------------- PUT ----------------
     def put(self, request, pk=None):
-        if pk is None:
-            return Response(
-                {"error": "PUT requires a primary key"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        obj = self.get_object(pk)
-        if not obj:
-            return Response(
-                {"error": "Object data not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
+        obj, error = get_obj_or_404(About, pk)
+        if error:
+            return error
         serializer = AboutSerializer(obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-
+            return Response({"message": "Data updated successfully"}, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -257,11 +183,9 @@ class GameInfoView(APIView):
 
     def get(self, request, pk=None):
         if pk:
-            obj = self.get__object(pk=pk)
-            if not obj:
-                return Response(
-                    {"error": "Object Not Found"}, status=status.HTTP_404_NOT_FOUND
-                )
+            obj, error = get_obj_or_404(GameInfo, pk)
+            if error:
+                return error
             serializer = GameInfoSerializer(obj)
             return Response(serializer.data)
 
@@ -284,7 +208,7 @@ class GameInfoView(APIView):
                 {"success": False, "message": "No results found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        # -------PAGINATION-------
+
         paginator = PageNumberPagination()
         paginator.page_size = 4
         result_page = paginator.paginate_queryset(queryset, request)
@@ -305,51 +229,23 @@ class GameInfoView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk=None):
-        if pk is None:
-            return Response(
-                {"error": "PATCH requires a primary key"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        obj = self.get__object(pk)
-        if not obj:
-            return Response(
-                {"success": False, "message": "No record found with this ID"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
+        obj, error = get_obj_or_404(About, pk)
+        if error:
+            return error
         serializer = GameInfoSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {"message": "Data patched successfully"},
-                status=status.HTTP_202_ACCEPTED,
-            )
-
+            return Response({"message": "Data updated successfully"}, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, pk=None):
-        if pk is None:
-            return Response(
-                {"error": "PATCH requires a primary key"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        obj = self.get__object(pk)
-        if not obj:
-            return Response(
-                {"success": False, "message": "No record found with this ID"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
+        obj, error = get_obj_or_404(GameInfo, pk)
+        if error:
+            return error
         serializer = GameInfoSerializer(obj, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {"message": "Data patched successfully"},
-                status=status.HTTP_202_ACCEPTED,
-            )
-
+            return Response({"message": "Data updated successfully"}, status=status.HTTP_202_ACCEPTED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 def can_use_ai(user):
@@ -445,23 +341,61 @@ class ChatHistoryAPIView(APIView):
         return Response(serializer.data, status=200)
 
 
-# def games_list_view(request):
-#     games = Games.objects.all()
-#     return render(request, "data/home.html", {"games": games})
-
 def games_list_view(request):
-    game_queryset = Games.objects.all().order_by('-created_at')
+    all_games_qs = Games.objects.all().prefetch_related("details").order_by("-created_at")
+    games = all_games_qs
 
-    paginator = Paginator(game_queryset, 8)
-    page_number = request.GET.get('page')
+    name = request.GET.get("name")
+    series_filter = request.GET.get("series")
+    company_filter = request.GET.get("developer")
+    platform_filter = request.GET.get("platform")
+    year_filter = request.GET.get("year")
+    steam_appid_filter = request.GET.get("steam")
+
+    if name:
+        games = games.filter(game_name__icontains=name)
+    if series_filter:
+        games = games.filter(series__icontains=series_filter)
+    if company_filter:
+        games = games.filter(developer__icontains=company_filter)
+    if platform_filter:
+        games = games.filter(details__platform__icontains=platform_filter)
+    if year_filter:
+        games = games.filter(release_date__year=year_filter)
+    if steam_appid_filter:
+        games = games.filter(details__steam_appid__icontains=steam_appid_filter)
+
+    games = games.distinct()
+
+    paginator = Paginator(games, 8)
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    series_list = all_games_qs.exclude(series__isnull=True).values_list("series", flat=True).distinct().order_by("series")
+    developer_list = all_games_qs.exclude(developer__isnull=True).values_list("developer", flat=True).distinct().order_by("developer")
+
+    platform_set = set()
+    for game in all_games_qs.prefetch_related("details"):
+        detail = game.details.first()
+        if detail and detail.platform:
+            platform_set.add(detail.platform)
+    platform_list = sorted(platform_set)
+
+    year_set = set()
+    for game in all_games_qs.exclude(release_date__isnull=True):
+        year_set.add(game.release_date.year)
+    year_list = sorted(year_set, reverse=True)
+
     context = {
-        'page_obj': page_obj,
-        # 'games': page_obj.object_list,
-        'all_games': game_queryset,
+        "page_obj": page_obj,
+        "all_games": all_games_qs,
+        "series_list": series_list,
+        "developer_list": developer_list,
+        "platform_list": platform_list,
+        "year_list": year_list,
     }
     return render(request, "data/home.html", context)
+
 
 def about_list_view(request):
     abouts = About.objects.all()

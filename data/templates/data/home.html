@@ -28,6 +28,7 @@ select option { background-color: rgba(0,0,0,0.85); color: white; }
 .dots { color: #aaa; }
 </style>
 
+
 <div class="relative z-10 container mx-auto px-4 py-12">
 
   <div class="text-center mb-16 border-b-2 border-cyan-500/30 pb-8">
@@ -37,7 +38,7 @@ select option { background-color: rgba(0,0,0,0.85); color: white; }
       MAIN CATALOGUE
     </h1>
     <p class="text-gray-400 mt-2 text-lg font-mono tracking-wide mb-6 break-words">
-      Explore all <span class="text-pink-400">>> {{ all_games.count }}</span> games in our records.
+      Explore all <span class="text-pink-400">>> {{ page_obj.paginator.count }}</span> games in our records.
     </p>
     <a href="{% url 'AI_chat' %}" class="inline-block bg-cyan-400 hover:bg-cyan-500 text-black font-bold
                px-6 py-3 rounded-lg glitch-hover transition text-lg">
@@ -45,94 +46,68 @@ select option { background-color: rgba(0,0,0,0.85); color: white; }
     </a>
   </div>
 
-  <!-- Filters -->
-  <div class="mb-4 p-6 bg-black/70 rounded-2xl border border-cyan-500/40 backdrop-blur-md
-              grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+<form method="get"
+      class="mb-4 pt-6 px-6 pb-0 bg-black/70 rounded-2xl border border-cyan-500/40 backdrop-blur-md
+             grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
 
-    <input type="text" id="filter-game-name" placeholder="Game Name" class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase placeholder:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all w-full">
+  <input type="text" name="name" value="{{ request.GET.name }}"
+         placeholder="Game Name"
+         class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase">
 
-    <div class="relative w-full group">
-      <select id="filter-series"
-              class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30
-                     border border-cyan-400 rounded-xl text-white font-bold tracking-wide
-                     text-lg uppercase focus:outline-none focus:ring-2
-                     focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+  <select name="series" class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30
+       border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase">
+      <option value="">All Series</option>
+      {% for s in series_list %}
+        <option value="{{ s }}" {% if request.GET.series == s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
 
-        <option value="">All Series</option>
+    <select name="developer" class="w-full px-4 py-3 bg-gradient-to-r from-pink-500/30 to-purple-500/30
+           border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase">
+      <option value="">All Developers</option>
+      {% for d in developer_list %}
+        <option value="{{ d }}" {% if request.GET.developer == d %}selected{% endif %}>{{ d }}</option>
+      {% endfor %}
+    </select>
 
-        {% for game in all_games|dictsort:"series" %}
-          {% if game.series %}
-            {% ifchanged game.series %}
-              <option value="{{ game.series }}">{{ game.series }}</option>
-            {% endifchanged %}
-          {% endif %}
-        {% endfor %}
+    <select name="platform" class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30
+           border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase">
+      <option value="">All Platforms</option>
+      {% for p in platform_list %}
+        <option value="{{ p }}" {% if request.GET.platform == p %}selected{% endif %}>{{ p }}</option>
+      {% endfor %}
+    </select>
 
-      </select>
-    </div>
+    <select name="year" class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30
+           border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase">
+      <option value="">All Years</option>
+      {% for y in year_list %}
+        <option value="{{ y }}" {% if request.GET.year|stringformat:"s" == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+  </select>
 
-    <div class="relative w-full group">
-      <select id="filter-company"
-              class="w-full px-4 py-3 bg-gradient-to-r from-pink-500/30 to-purple-500/30
-                     border border-cyan-400 rounded-xl text-white font-bold tracking-wide
-                     text-lg uppercase focus:outline-none focus:ring-2
-                     focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
+  <input type="text" name="steam"
+         value="{{ request.GET.steam }}"
+         placeholder="Steam AppID"
+         class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase">
 
-        <option value="">All Developers</option>
-
-        {% for game in all_games|dictsort:"developer" %}
-          {% if game.developer %}
-            {% ifchanged game.developer %}
-              <option value="{{ game.developer }}">{{ game.developer }}</option>
-            {% endifchanged %}
-          {% endif %}
-        {% endfor %}
-
-      </select>
-    </div>
-
-    <div class="relative w-full group">
-      <select id="filter-platform"
-              class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30
-                     border border-cyan-400 rounded-xl text-white font-bold tracking-wide
-                     text-lg uppercase focus:outline-none focus:ring-2
-                     focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
-
-        <option value="">All Platforms</option>
-
-        {% for game in all_games %}
-          {% with detail=game.details.first %}
-            {% if detail and detail.platform %}
-              {% ifchanged detail.platform %}
-                <option value="{{ detail.platform }}">{{ detail.platform }}</option>
-              {% endifchanged %}
-            {% endif %}
-          {% endwith %}
-        {% endfor %}
-
-      </select>
-    </div>
-
-
-    <div class="relative w-full group">
-      <select id="filter-year" class="w-full px-4 py-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all pr-10">
-        <option value="">All Years</option>
-        {% for game in all_games %}
-          {% if game.release_date %}
-            <option value="{{ game.release_date|date:'Y' }}">{{ game.release_date|date:'Y' }}</option>
-          {% endif %}
-        {% endfor %}
-      </select>
-    </div>
-
-    <input type="text" id="filter-steam-appid" placeholder="Steam AppID" class="px-4 py-3 bg-black/70 border border-cyan-400 rounded-xl text-white font-bold tracking-wide text-lg uppercase placeholder:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1 transition-all w-full">
-
-    <button id="clear-filters" class="col-span-full bg-gradient-to-r from-cyan-400 to-cyan-600 hover:from-cyan-500 hover:to-cyan-700 text-black font-bold px-6 py-3 rounded-2xl uppercase tracking-wider text-lg shadow-lg transition-all">
-      Clear Filters
+  <button type="submit"
+            class="bg-gradient-to-r from-cyan-600 to-blue-600
+                   hover:from-cyan-500 hover:to-blue-500
+                   text-white font-bold px-8 py-3 rounded-xl uppercase
+                   tracking-wider text-lg shadow-lg transition-all">
+        Apply Filters
     </button>
-  </div>
 
-  <div id="active-filters" class="mb-6 max-w-5xl mx-auto flex flex-wrap gap-2"></div>
+    <button id="clear-filters" type="button"
+            class="bg-gradient-to-r from-red-500 to-pink-500
+                   hover:from-red-600 hover:to-pink-600
+                   text-white font-bold px-8 py-3 rounded-xl uppercase
+                   tracking-wider text-lg shadow-lg transition-all">
+        Clear Filters
+    </button>
+
+  <div id="active-filters" class="mb-0 max-w-5xl mx-auto flex flex-wrap gap-2"></div>
 
   <div id="no-results" class="col-span-full flex flex-col items-center justify-center py-20 text-center text-gray-500 hidden">
     <div class="text-6xl mb-4 text-red-500 animate-pulse-slow">🛑</div>
@@ -140,9 +115,11 @@ select option { background-color: rgba(0,0,0,0.85); color: white; }
     <p class="text-gray-600 font-mono mt-2">TRY ADJUSTING OR CLEARING THE FILTERS.</p>
   </div>
 
-  <!-- Cards -->
+</form>
+
+<!-- Cards -->
     <div id="cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-      {% for game in all_games %}
+      {% for game in page_obj %}
         {% with detail=game.details.first %}
           <div class="group relative bg-cyber-gray/60 backdrop-blur-md rounded-xl border border-gray-700/50
                       overflow-hidden hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(236,72,153,0.4)]
@@ -220,157 +197,21 @@ select option { background-color: rgba(0,0,0,0.85); color: white; }
 
 </div>
 
-{% with current_params=request.GET.urlencode %}
-<div id="pagination-container" class="mt-10 flex justify-center items-center space-x-2">
+<div class="mt-10 flex justify-center gap-2">
+{% if page_obj.has_previous %}
+  <a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}"
+     class="px-4 py-2 bg-cyan-400 rounded text-black">Prev</a>
+{% endif %}
 
-    {% if page_obj.has_previous %}
-        <a class="page-btn px-4 py-2 bg-cyan-400 hover:bg-cyan-500 text-black rounded-lg font-bold"
-           href="?{% if current_params %}{{ current_params }}&{% endif %}page={{ page_obj.previous_page_number }}">« Prev</a>
-    {% endif %}
+<span class="px-4 py-2 bg-pink-500 text-white rounded">
+  {{ page_obj.number }}
+</span>
 
-    {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-            <span class="page-btn px-4 py-2 bg-pink-500 text-white rounded-lg font-bold">{{ num }}</span>
-        {% else %}
-            <a class="page-btn px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-bold"
-               href="?{% if current_params %}{{ current_params }}&{% endif %}page={{ num }}">{{ num }}</a>
-        {% endif %}
-    {% endfor %}
-
-    {% if page_obj.has_next %}
-        <a class="page-btn px-4 py-2 bg-cyan-400 hover:bg-cyan-500 text-black rounded-lg font-bold"
-           href="?{% if current_params %}{{ current_params }}&{% endif %}page={{ page_obj.next_page_number }}">Next »</a>
-    {% endif %}
+{% if page_obj.has_next %}
+  <a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}"
+     class="px-4 py-2 bg-cyan-400 rounded text-black">Next</a>
+{% endif %}
+</div>
 
 </div>
-{% endwith %}
-
-<script>
-(function() {
-
-  const filters = {
-    gameName: document.getElementById('filter-game-name'),
-    series: document.getElementById('filter-series'),
-    company: document.getElementById('filter-company'),
-    platform: document.getElementById('filter-platform'),
-    year: document.getElementById('filter-year'),
-    steamAppid: document.getElementById('filter-steam-appid'),
-  };
-
-  const clearBtn = document.getElementById('clear-filters');
-  const cards = Array.from(document.querySelectorAll('.card-entry'));
-  const noResults = document.getElementById('no-results');
-
-  const ITEMS_PER_PAGE = 8;
-  let currentPage = 1;
-
-  /* ================= URL HELPERS ================= */
-  function getParams() {
-    return new URLSearchParams(window.location.search);
-  }
-
-  function setURL(values, page = 1) {
-  const params = new URLSearchParams(window.location.search);
-
-  // Remove old 'page' param
-  params.delete('page');
-
-  // Add filter values
-  Object.entries(values).forEach(([key, val]) => {
-    if (val) params.set(key, val);
-  });
-
-  // Add new page value
-  params.set('page', page);
-
-  // Update the URL
-  history.replaceState({}, '', '?' + params.toString());
-}
-
-  function readURL() {
-    const params = getParams();
-    Object.keys(filters).forEach(key => {
-      if (filters[key] && params.get(key)) {
-        filters[key].value = params.get(key);
-      }
-    });
-    currentPage = parseInt(params.get('page')) || 1;
-  }
-
-  /* ================= FILTER LOGIC ================= */
-  function val(el) {
-    return el ? el.value.toLowerCase().trim() : '';
-  }
-
-  function data(card, key) {
-    return card.dataset[key] ? card.dataset[key].toLowerCase() : '';
-  }
-
-  function applyFilters() {
-    const values = {
-      gameName: val(filters.gameName),
-      series: val(filters.series),
-      company: val(filters.company),
-      platform: val(filters.platform),
-      year: val(filters.year),
-      steamAppid: val(filters.steamAppid),
-    };
-
-    // Filter cards
-    const filtered = cards.filter(card => {
-      return data(card, 'gameName').includes(values.gameName) &&
-             data(card, 'series').includes(values.series) &&
-             data(card, 'company').includes(values.company) &&
-             data(card, 'platform').includes(values.platform) &&
-             (values.year === '' || data(card, 'year') === values.year) &&
-             data(card, 'steamAppid').includes(values.steamAppid);
-    });
-
-    // Show "no results" if empty
-    noResults.classList.toggle('hidden', filtered.length > 0);
-
-    // Paginate filtered cards
-    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-    if (currentPage > totalPages) currentPage = 1;
-
-    cards.forEach(card => card.style.display = 'none'); // hide all
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    const end = start + ITEMS_PER_PAGE;
-    filtered.slice(start, end).forEach(card => card.style.display = '');
-
-    // Update URL (page + filters)
-    setURL(values, currentPage);
-  }
-
-  /* ================= EVENTS ================= */
-  Object.values(filters).forEach(input => {
-    if (!input) return;
-    input.addEventListener('input', () => { currentPage = 1; applyFilters(); });
-    input.addEventListener('change', () => { currentPage = 1; applyFilters(); });
-  });
-
-  if (clearBtn) {
-  clearBtn.addEventListener('click', () => {
-    // Clear all filter inputs
-    Object.values(filters).forEach(input => { if(input) input.value = ''; });
-    currentPage = 1;
-
-    // Apply filters (show all cards)
-    applyFilters();
-
-    // Clear all filter params from URL
-    const params = new URLSearchParams(window.location.search);
-    Object.keys(filters).forEach(key => params.delete(key)); // remove filter keys
-    params.delete('page'); // also remove page key
-    history.replaceState({}, '', '?' + params.toString());
-  });
-  }
-
-  /* ================= INIT ================= */
-  readURL();
-  applyFilters();
-
-})();
-</script>
-
 {% endblock %}

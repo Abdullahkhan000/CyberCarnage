@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
-import dj_database_url
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -93,17 +91,6 @@ WSGI_APPLICATION = "core.wsgi.application"
 #     }
 # }
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": config("DB_NAME"),
-#         "USER": config("DB_USER"),
-#         "PASSWORD": config("DB_PASSWORD"),
-#         "HOST": config("DB_HOST"),
-#         "PORT": config("DB_PORT", cast=int),
-#     }
-# }
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -162,6 +149,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 GENAI_API_KEY = config("AI_API_KEY")
+RAWG_API_KEY = config("RAWG_KEY")
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
