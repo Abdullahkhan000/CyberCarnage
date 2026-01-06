@@ -99,13 +99,14 @@ select option { background-color: rgba(0,0,0,0.85); color: white; }
         Apply Filters
     </button>
 
-    <button id="clear-filters" type="button"
-            class="bg-gradient-to-r from-red-500 to-pink-500
-                   hover:from-red-600 hover:to-pink-600
-                   text-white font-bold px-8 py-3 rounded-xl uppercase
-                   tracking-wider text-lg shadow-lg transition-all">
+    <a href="{% url 'home' %}"
+       class="bg-gradient-to-r from-red-500 to-pink-500
+              hover:from-red-600 hover:to-pink-600
+              text-white font-bold px-8 py-3 rounded-xl uppercase
+              tracking-wider text-lg shadow-lg transition-all
+              inline-block text-center">
         Clear Filters
-    </button>
+    </a>
 
   <div id="active-filters" class="mb-0 max-w-5xl mx-auto flex flex-wrap gap-2"></div>
 
