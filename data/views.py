@@ -341,6 +341,61 @@ class ChatHistoryAPIView(APIView):
         return Response(serializer.data, status=200)
 
 
+# def games_list_view(request):
+#     all_games_qs = Games.objects.all().prefetch_related("details").order_by("-created_at")
+#     games = all_games_qs
+#
+#     name = request.GET.get("name")
+#     series_filter = request.GET.get("series")
+#     company_filter = request.GET.get("developer")
+#     platform_filter = request.GET.get("platform")
+#     year_filter = request.GET.get("year")
+#     steam_appid_filter = request.GET.get("steam")
+#
+#     if name:
+#         games = games.filter(game_name__icontains=name)
+#     if series_filter:
+#         games = games.filter(series__icontains=series_filter)
+#     if company_filter:
+#         games = games.filter(developer__icontains=company_filter)
+#     if platform_filter:
+#         games = games.filter(details__platform__icontains=platform_filter)
+#     if year_filter:
+#         games = games.filter(release_date__year=year_filter)
+#     if steam_appid_filter:
+#         games = games.filter(details__steam_appid__icontains=steam_appid_filter)
+#
+#     games = games.distinct()
+#
+#     paginator = Paginator(games, 8)
+#     page_number = request.GET.get("page")
+#     page_obj = paginator.get_page(page_number)
+#
+#     series_list = all_games_qs.exclude(series__isnull=True).values_list("series", flat=True).distinct().order_by("series")
+#     developer_list = all_games_qs.exclude(developer__isnull=True).values_list("developer", flat=True).distinct().order_by("developer")
+#
+#     platform_set = set()
+#     for game in all_games_qs.prefetch_related("details"):
+#         detail = game.details.first()
+#         if detail and detail.platform:
+#             platform_set.add(detail.platform)
+#     platform_list = sorted(platform_set)
+#
+#     year_set = set()
+#     for game in all_games_qs.exclude(release_date__isnull=True):
+#         year_set.add(game.release_date.year)
+#     year_list = sorted(year_set, reverse=True)
+#
+#     context = {
+#         "page_obj": page_obj,
+#         "all_games": all_games_qs,
+#         "series_list": series_list,
+#         "developer_list": developer_list,
+#         "platform_list": platform_list,
+#         "year_list": year_list,
+#     }
+#     return render(request, "data/home.html", context)
+
 def games_list_view(request):
     all_games_qs = Games.objects.all().prefetch_related("details").order_by("-created_at")
     games = all_games_qs
@@ -367,10 +422,12 @@ def games_list_view(request):
 
     games = games.distinct()
 
+    # --- Pagination ---
     paginator = Paginator(games, 8)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    # --- Lists for filters ---
     series_list = all_games_qs.exclude(series__isnull=True).values_list("series", flat=True).distinct().order_by("series")
     developer_list = all_games_qs.exclude(developer__isnull=True).values_list("developer", flat=True).distinct().order_by("developer")
 
@@ -386,6 +443,8 @@ def games_list_view(request):
         year_set.add(game.release_date.year)
     year_list = sorted(year_set, reverse=True)
 
+    latest_game = all_games_qs[:1]  # latest 5 games, adjust as needed
+
     context = {
         "page_obj": page_obj,
         "all_games": all_games_qs,
@@ -393,9 +452,10 @@ def games_list_view(request):
         "developer_list": developer_list,
         "platform_list": platform_list,
         "year_list": year_list,
+        "latest_game": latest_game,
     }
-    return render(request, "data/home.html", context)
 
+    return render(request, "data/home.html", context)
 
 def about_list_view(request):
     abouts = About.objects.all()
