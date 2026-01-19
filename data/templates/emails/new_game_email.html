@@ -4,20 +4,21 @@
         background:linear-gradient(145deg,#0a0a0a,#080808);
         border:1px solid rgba(0,255,255,0.35);
         box-shadow:
-            0 0 18px rgba(0,255,255,0.18),
-            0 0 45px rgba(188,19,254,0.15),
-            inset 0 0 25px rgba(0,255,255,0.05);
+            0 0 20px rgba(0,255,255,0.2),
+            0 0 50px rgba(188,19,254,0.15),
+            inset 0 0 30px rgba(0,255,255,0.05);
         overflow:hidden;
     ">
+
         <div style="padding:40px 32px;text-align:center;
                     background:radial-gradient(circle at top,#021d24,#050505);">
             <h1 style="
-                font-family:'Orbitron',sans-serif;font-size:36px;
+                font-family:'Orbitron',sans-serif;font-size:38px;
                 color:#00eaff;font-weight:700;margin:0;
                 text-shadow:
-                    0 0 12px #00ffff,
-                    0 0 22px #00eaff,
-                    0 0 38px #bc13fe;
+                    0 0 15px #00ffff,
+                    0 0 28px #00eaff,
+                    0 0 45px #bc13fe;
                 letter-spacing:2px;
             ">
                 ⚡ NEW GAME DROP
@@ -26,43 +27,73 @@
                       text-shadow:0 0 8px rgba(0,200,255,0.25);">
                 Incoming data packet detected in the CyberCarnage vault.
             </p>
+
+            <p style="color:#77dfff;font-size:14px;margin-top:10px;line-height:1.4;">
+                Explore now at:
+                <a href="https://www.cybercarnage.online/" style="color:#00eaff;text-decoration:none;font-weight:700;
+                   text-shadow:0 0 6px #00ffff, 0 0 12px #bc13fe;">cybercarnage.online</a>
+            </p>
+
+            <p style="color:#b7b7ff;font-size:13px;margin-top:6px;line-height:1.3;">
+                Or view details at:
+                <a href="https://cyber-carnage.vercel.app/" style="color:#bc13fe;text-decoration:none;font-weight:600;
+                   text-shadow:0 0 6px #bc13fe, 0 0 10px #00ffff;">cyber-carnage.vercel.app</a>
+            </p>
         </div>
 
-        <div style="padding:32px 26px;background:#0d0d0d;
-                    border-top:1px solid rgba(0,255,255,0.35);">
+        <div style="padding:36px 28px;background:#0d0d0d;
+                    border-top:1px solid rgba(0,255,255,0.35);
+                    text-align:center;">
 
             <h2 style="
-                font-family:'Orbitron',sans-serif;font-size:28px;
-                color:#bc13fe;margin:0 0 14px 0;letter-spacing:1.5px;
-                text-shadow:0 0 12px #bc13fe73;
+                font-family:'Orbitron',sans-serif;font-size:30px;
+                color:#bc13fe;margin:0 0 16px 0;letter-spacing:2px;
+                text-shadow:0 0 15px #bc13fe80,0 0 25px #00eaff40;
             ">
                 {{ game.game_name }}
             </h2>
 
-            <div style="margin:18px 0;color:#c9c9c9;font-size:15px;line-height:1.65;">
+            <div style="margin:20px 0;color:#c9c9c9;font-size:15px;line-height:1.65;">
                 <strong style="color:#00eaff;">Release Date:</strong> {{ game.release_date }}<br>
                 <strong style="color:#00eaff;">Series:</strong> {{ game.series }}<br>
                 <strong style="color:#00eaff;">Developer:</strong> {{ game.developer }}<br>
                 <strong style="color:#00eaff;">Publisher:</strong> {{ game.publisher }}
             </div>
 
-            <div style="margin:28px 0;text-align:center;">
+            <div style="margin:28px 0; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
                 {% if game.pk and game.slug %}
-                <a href="https://cyber-carnage.vercel.app/game-detail/{{ about.id }}/{{ game.slug }}/"
+                <a href="https://www.cybercarnage.online/game-detail/{{ about.id }}/{{ game.slug }}/"
                    style="
-                        padding:15px 36px;font-weight:800;border-radius:12px;
+                        padding:15px 36px;font-weight:800;border-radius:14px;
                         font-family:'Orbitron',sans-serif;font-size:16px;
                         background:#00eaff;color:#000;text-decoration:none;
                         letter-spacing:1px;
                         box-shadow:
-                            0 0 14px rgba(0,255,255,0.85),
-                            0 0 40px rgba(0,255,255,0.35),
-                            inset 0 0 8px rgba(255,255,255,0.4);
+                            0 0 16px rgba(0,255,255,0.85),
+                            0 0 45px rgba(0,255,255,0.35),
+                            inset 0 0 10px rgba(255,255,255,0.4);
                         transition:0.25s;
                     "
-                   onmouseover="this.style.boxShadow='0 0 20px rgba(0,255,255,1),0 0 55px #bc13fe, inset 0 0 10px white'"
-                   onmouseout="this.style.boxShadow='0 0 14px rgba(0,255,255,0.85),0 0 40px rgba(0,255,255,0.35), inset 0 0 8px rgba(255,255,255,0.4)'">
-                    VIEW GAME
+                   onmouseover="this.style.boxShadow='0 0 24px rgba(0,255,255,1),0 0 55px #bc13fe, inset 0 0 12px white'"
+                   onmouseout="this.style.boxShadow='0 0 16px rgba(0,255,255,0.85),0 0 45px rgba(0,255,255,0.35), inset 0 0 10px rgba(255,255,255,0.4)'">
+                    ONLINE VIEW
+                </a>
+
+                <a href="https://cyber-carnage.vercel.app/game-detail/{{ about.id }}/{{ game.slug }}/"
+                   style="
+                        padding:15px 36px;font-weight:800;border-radius:14px;
+                        font-family:'Orbitron',sans-serif;font-size:16px;
+                        background:#bc13fe;color:#000;text-decoration:none;
+                        letter-spacing:1px;
+                        box-shadow:
+                            0 0 16px rgba(188,19,254,0.85),
+                            0 0 45px rgba(188,19,254,0.35),
+                            inset 0 0 10px rgba(255,255,255,0.4);
+                        transition:0.25s;
+                    "
+                   onmouseover="this.style.boxShadow='0 0 24px #bc13fe,0 0 55px #00eaff, inset 0 0 12px white'"
+                   onmouseout="this.style.boxShadow='0 0 16px rgba(188,19,254,0.85),0 0 45px rgba(188,19,254,0.35), inset 0 0 10px rgba(255,255,255,0.4)'">
+                    VERCEL VIEW
                 </a>
                 {% else %}
                 <span style="color:#ff4d4d;font-weight:600;
@@ -72,7 +103,7 @@
 
         </div>
 
-        <div style="padding:26px 22px;text-align:center;background:#0b0b0b;
+        <div style="padding:28px 24px;text-align:center;background:#0b0b0b;
                     border-top:1px solid rgba(0,255,255,0.18);">
             <p style="font-size:12px;color:#777;line-height:1.6;">
                 CyberCarnage • Neural Gaming Updates<br>
