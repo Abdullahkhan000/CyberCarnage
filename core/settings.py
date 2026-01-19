@@ -20,6 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
+CORS_ALLOWED_ORIGINS = [
+    "https://cybercarnage.online",
+    "https://www.cybercarnage.online",
+]
+
+
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 DEBUG = config("DEBUG", cast=bool, default=False)
 
@@ -27,7 +33,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "cybercarnage.onrender.com",
-    "www.cybercarnage.com",
+    "www.cybercarnage.online",
     "cyber-carnage.vercel.app",
     "cyber-carnage-7fad0cfna.vercel.app",
     ".vercel.app",
@@ -45,7 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-OTHER_INSTALLED_APPS = ["rest_framework", "data", "crispy_forms", "widget_tweaks"]
+OTHER_INSTALLED_APPS = ["rest_framework", "data", "crispy_forms", "widget_tweaks","corsheaders"]
 
 INSTALLED_APPS += OTHER_INSTALLED_APPS
 
@@ -59,6 +65,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
