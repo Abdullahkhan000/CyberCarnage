@@ -8,9 +8,6 @@ import threading
 import time
 
 def send_email_to_subscriber(sub, subject, html_content, text_content):
-    """
-    Sends a single email via Resend API with error handling
-    """
     try:
         response = requests.post(
             "https://api.resend.com/emails",
@@ -48,7 +45,7 @@ def send_new_game_email(about_instance):
         {
             "game": game,
             "about": about,
-            "unsubscribe_url": "{{unsubscribe_link}}"  # Replace dynamically if implemented
+            "unsubscribe_url": "{{unsubscribe_link}}"
         }
     )
 
@@ -61,7 +58,6 @@ Publisher: {game.publisher}
 Unsubscribe: {{unsubscribe_link}}
 """
 
-    # Send emails in background threads (async style)
     for sub in subscribers:
         response = requests.post(
             "https://api.resend.com/emails",
