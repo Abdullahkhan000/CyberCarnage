@@ -72,6 +72,21 @@
             }
         }
 
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         function toggleMenu() {
             const nav = document.getElementById("mobileNav");
             nav.classList.toggle("hidden");
@@ -83,6 +98,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             const contactForm = document.getElementById("contactForm");
             const sendBtn = document.getElementById("sendBtn");
+            const newsletterForm = document.getElementById("newsletterForm");
             const originalSendText = sendBtn.innerHTML;
             contactForm?.addEventListener("submit", function(e){
                 e.preventDefault();
@@ -102,25 +118,43 @@
                 }).catch(()=>{ sendBtn.disabled=false; sendBtn.innerHTML=originalSendText; contactForm.classList.add("animate-shake"); setTimeout(()=>contactForm.classList.remove("animate-shake"),500); alert("Network error!"); });
             });
 
-            const newsletterForm = document.getElementById("newsletterForm");
+            const csrftoken = getCookie('csrftoken');
+
             newsletterForm?.addEventListener("submit", (e) => {
                 e.preventDefault();
+
                 const button = newsletterForm.querySelector("button");
                 const originalText = button.innerHTML;
+
                 button.innerHTML = `<span class="loader border-t-2 border-b-2 border-black w-5 h-5 inline-block rounded-full animate-spin mr-2"></span> SUBSCRIBING...`;
                 button.disabled = true;
+
                 fetch("{% url 'subscribe_newsletter' %}", {
                     method: "POST",
-                    headers: { "X-CSRFToken": "{{ csrf_token }}" },
+                    headers: {
+                        "X-CSRFToken": csrftoken
+                    },
                     body: new FormData(newsletterForm)
                 })
-                .then(res=>res.json())
-                .then(data=>{
-                    button.disabled=false; button.innerHTML=originalText;
-                    if(data.status==="success"){ newsletterForm.classList.add("animate-pulse-wave"); setTimeout(()=>newsletterForm.classList.remove("animate-pulse-wave"),1500); alert("Subscribed successfully!"); newsletterForm.reset();}
-                    else if(data.status==="exists"){ alert("You are already subscribed!");}
-                    else{ newsletterForm.classList.add("animate-shake"); setTimeout(()=>newsletterForm.classList.remove("animate-shake"),500); alert("Subscription failed. Try again.");}
-                }).catch(()=>{ button.disabled=false; button.innerHTML=originalText; newsletterForm.classList.add("animate-shake"); setTimeout(()=>newsletterForm.classList.remove("animate-shake"),500); alert("Network error!");});
+                .then(res => res.json())
+                .then(data => {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+
+                    if (data.status === "success") {
+                        alert("Subscribed successfully!");
+                        newsletterForm.reset();
+                    } else if (data.status === "exists") {
+                        alert("You are already subscribed!");
+                    } else {
+                        alert("Subscription failed. Try again.");
+                    }
+                })
+                .catch(() => {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                    alert("Network error!");
+                });
             });
         });
     </script>
@@ -313,16 +347,18 @@
                 Subscribe to Updates
             </h3>
 
-            <form id="newsletterForm" class="flex flex-col md:flex-row gap-2 w-full max-w-md">
+           <form id="newsletterForm" method="post"
+                  class="flex flex-col md:flex-row gap-2 w-full max-w-md">
+                {% csrf_token %}
+
                 <input type="email" name="email" placeholder="Your email" required
-                       class="w-full bg-black/40 border border-cyan-400/30 rounded px-4 py-2 text-white placeholder-gray-500
-                       focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"/>
+                       class="w-full bg-black/40 border border-cyan-400/30 rounded px-4 py-2 text-white"/>
 
                 <button type="submit"
                         class="bg-cyan-400 hover:bg-cyan-500 text-black font-bold px-4 py-2 rounded-lg glitch-hover">
                     SUBSCRIBE
                 </button>
-            </form>
+           </form>
 
             <p class="text-gray-400 text-xs mt-2 text-center md:text-left leading-relaxed max-w-md">
                 📩 You’ll receive occasional updates from CyberCarnage.

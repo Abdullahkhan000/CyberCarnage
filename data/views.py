@@ -24,6 +24,7 @@ from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
 from rest_framework.pagination import PageNumberPagination
 from django.core.paginator import Paginator
+import requests
 
 class GameView(APIView):
     search_fields = ["game_name", "release_date", "series", "developer", "publisher"]
@@ -516,24 +517,43 @@ def send_contact(request):
 
     return JsonResponse({"status": "error"})
 
-
+@csrf_exempt
 def subscribe_newsletter(request):
-    if request.method == "POST":
-        email = request.POST.get("email")
-        if email:
-            subscriber, created = Subscriber.objects.get_or_create(email=email)
-            if created:
-                send_mail(
-                    subject="Subscription Confirmed",
-                    message="Thank you for subscribing to CyberCarnage newsletter!",
-                    from_email="yourorg@example.com",
-                    recipient_list=[email],
-                    fail_silently=False,
-                )
-                return JsonResponse({"status": "success"})
-            return JsonResponse({"status": "exists"})
-    return JsonResponse({"status": "error"})
+    if request.method != "POST":
+        return JsonResponse({"status": "error"}, status=400)
 
+    email = request.POST.get("email")
+    if not email:
+        return JsonResponse({"status": "error"}, status=400)
+
+    subscriber, created = Subscriber.objects.get_or_create(email=email)
+
+    if not created:
+        return JsonResponse({"status": "exists"})
+
+    try:
+        requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "from": "CyberCarnage <newsletter@cybercarnage.online>",
+                "to": [email],
+                "subject": "Subscription Confirmed",
+                "html": """
+                    <h2>Welcome to CyberCarnage ⚡</h2>
+                    <p>You are now subscribed to gaming updates.</p>
+                    <p>If you don’t see future emails, check <b>Spam / Promotions</b>.</p>
+                """,
+            },
+            timeout=10,
+        )
+    except Exception:
+        pass
+
+    return JsonResponse({"status": "success"})
 
 def gemini_chat_view(request):
     return render(request, "data/gemini_chat.html")
