@@ -13,7 +13,6 @@ from .filters import GameFilter, AboutFilter, InfoFilter
 from rest_framework.response import Response
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.shortcuts import render, get_object_or_404
-from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.conf import settings
@@ -25,6 +24,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.pagination import PageNumberPagination
 from django.core.paginator import Paginator
 import requests
+import resend
+from django.template.loader import render_to_string
 
 class GameView(APIView):
     search_fields = ["game_name", "release_date", "series", "developer", "publisher"]
@@ -490,32 +491,42 @@ def faq_page(request):
     return render(request, "data/faq.html")
 
 
+resend.api_key = settings.RESEND_API_KEY
+CONTACT_RECEIVER_EMAIL = settings.CONTACT_RECEIVER_EMAIL
+
 def send_contact(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        message = request.POST.get("message")
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
-        final_message = f"""
-        New Contact Message
-        -------------------------
-        Name: {name}
-        Email: {email}
-        Message:
-        {message}
-        """
+    name = request.POST.get("name")
+    email = request.POST.get("email")
+    message = request.POST.get("message")
 
-        send_mail(
-            subject=f"New Contact Message from {name}",
-            message=final_message,
-            from_email=email,
-            recipient_list=["ai8526304@gmail.com"],
-            fail_silently=False,
+    if not name or not email or not message:
+        return JsonResponse({"status": "error", "message": "All fields are required"}, status=400)
+
+    try:
+        html_content = render_to_string(
+            "emails/contact_mail.html",
+            {
+                "name": name,
+                "email": email,
+                "message": message
+            }
         )
+
+        resend.Emails.send({
+            "from": "Contact <contact@cybercarnage.online>",
+            "to": [CONTACT_RECEIVER_EMAIL],
+            "reply_to": email,
+            "subject": f"New Contact Message from {name}",
+            "html": html_content
+        })
 
         return JsonResponse({"status": "success"})
 
-    return JsonResponse({"status": "error"})
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 @csrf_exempt
 def subscribe_newsletter(request):
